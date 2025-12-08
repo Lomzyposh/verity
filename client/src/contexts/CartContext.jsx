@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/axios';
 import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
@@ -58,10 +58,8 @@ export const CartProvider = ({ children }) => {
   const fetchCartFromServer = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/cart', { 
-        withCredentials: true,
-        headers: user ? {} : {},
-        params: sessionId ? { sessionId } : {}
+      const response = await api.get('/api/cart', {
+        params: sessionId ? { sessionId } : {},
       });
       setCartItems(response.data.cart?.items || []);
     } catch (error) {
@@ -75,11 +73,15 @@ export const CartProvider = ({ children }) => {
     try {
       if (user) {
         // Logged-in user: save to server
-        const response = await axios.post('/api/cart', {
-          productId: product._id,
-          quantity,
-          customization
-        }, { withCredentials: true });
+        const response = await api.post(
+          '/api/cart',
+          {
+            productId: product._id,
+            quantity,
+            customization,
+            sessionId: sessionId || undefined,
+          }
+        );
         setCartItems(response.data.cart.items);
       } else {
         // Guest user: save to localStorage
@@ -114,7 +116,7 @@ export const CartProvider = ({ children }) => {
   const updateCartItem = async (itemId, quantity) => {
     try {
       if (user) {
-        const response = await axios.put(`/api/cart/${itemId}`, { quantity }, { withCredentials: true });
+        const response = await api.put(`/api/cart/${itemId}`, { quantity });
         setCartItems(response.data.cart.items);
       } else {
         const updatedCart = cartItems.map(item => 
@@ -131,9 +133,8 @@ export const CartProvider = ({ children }) => {
   const removeFromCart = async (itemId) => {
     try {
       if (user) {
-        const response = await axios.delete(`/api/cart/${itemId}`, { 
-          withCredentials: true,
-          params: sessionId ? { sessionId } : {}
+        const response = await api.delete(`/api/cart/${itemId}`, {
+          params: sessionId ? { sessionId } : {},
         });
         setCartItems(response.data.cart.items);
       } else {
@@ -164,7 +165,7 @@ export const CartProvider = ({ children }) => {
         price: item.priceAtAdd
       }));
 
-      const response = await axios.post('/api/cart/sync', { guestCart }, { withCredentials: true });
+      const response = await api.post('/api/cart/sync', { guestCart });
       setCartItems(response.data.cart.items);
       localStorage.removeItem('veritygem_guest_cart');
     } catch (error) {
@@ -198,6 +199,7 @@ export const CartProvider = ({ children }) => {
       updateCartItem,
       removeFromCart,
       clearCart,
+      fetchCartFromServer,
       getTotalAmount,
       getItemCount,
       cartCount: cartItems.length

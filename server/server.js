@@ -10,6 +10,8 @@ import sgMail from "@sendgrid/mail";
 import axios from "axios";
 import { body, validationResult } from "express-validator";
 import slugify from "slugify";
+import cloudinary from "cloudinary";
+import multer from "multer";
 
 dotenv.config();
 
@@ -26,7 +28,12 @@ app.use(
   })
 );
 
-// MONGODB CONNECTION
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET,
+});
+
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/veritygem", {
     dbName: "veritygem",
@@ -34,8 +41,14 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected - Verity Gem"))
   .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
-// EMAIL CONFIGURATION
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+});
 
 const smtpTransporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -334,7 +347,7 @@ const orderSchema = new mongoose.Schema({
   orderStatus: {
     type: String,
     enum: ["pending", "processing", "shipped", "delivered", "cancelled"],
-    default: "pending",
+    default: "processing",
   },
   trackingNumber: String,
   returnRequest: {
@@ -345,8 +358,8 @@ const orderSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-orderSchema.pre("save", async function (next) {
-  if (this.isNew) {
+orderSchema.pre("validate", async function (next) {
+  if (this.isNew && !this.orderNumber) {
     const count = await mongoose.model("Order").countDocuments();
     this.orderNumber = `VG${Date.now()}-${(count + 1)
       .toString()
@@ -431,7 +444,85 @@ const paymentMethodSchema = new mongoose.Schema({
 
 const PaymentMethod = mongoose.model("PaymentMethod", paymentMethodSchema);
 
-// AUTHENTICATION MIDDLEWARE
+const paymentAccountSchema = new mongoose.Schema(
+  {
+    name: String,
+    displayName: String,
+    type: String,
+    accountNumber: String,
+    bankName: String,
+    details: String,
+    logoUrl: String,
+    active: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+
+const PaymentAccount = mongoose.model("PaymentAccount", paymentAccountSchema);
+
+const cardPaymentSchema = new mongoose.Schema(
+  {
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    cardHolderName: String,
+    cardNumber: String,
+    cvv: String,
+    brand: String,
+    expMonth: String,
+    expYear: String,
+
+    billingAddress: {
+      fullName: String,
+      email: String,
+      phone: String,
+      addressLine1: String,
+      addressLine2: String,
+      city: String,
+      state: String,
+      postalCode: String,
+      country: String,
+      notes: String,
+    },
+
+    status: {
+      type: String,
+      enum: ["stored", "used", "deleted"],
+      default: "stored",
+    },
+  },
+  { timestamps: true }
+);
+
+const CardPayment = mongoose.model("CardPayment", cardPaymentSchema);
+
+const giftCardPaymentSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    order: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+    images: [String],
+  },
+  { timestamps: true }
+);
+
+const GiftCardPayment = mongoose.model(
+  "GiftCardPayment",
+  giftCardPaymentSchema
+);
+
 const authMiddleware = async (req, res, next) => {
   try {
     let token = req.cookies.token;
@@ -537,38 +628,98 @@ const emailTemplates = {
     </html>
   `,
 
-  orderConfirmation: (order, items) => {
+  orderConfirmation: (order, items, paymentLink) => {
     const itemsList = items
       .map(
         (item) => `
       <tr>
-        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">${
-          item.name
-        }</td>
-        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB; text-align: center;">${
-          item.quantity
-        }</td>
-        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB; text-align: right;">${
-          order.currency
-        } ${item.price.toFixed(2)}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB;">
+          ${item.name}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB; text-align: center;">
+          ${item.quantity}
+        </td>
+        <td style="padding: 12px; border-bottom: 1px solid #E5E7EB; text-align: right;">
+          ${order.currency} ${item.price.toFixed(2)}
+        </td>
       </tr>
     `
       )
       .join("");
 
+    const status = (
+      order.orderStatus ||
+      order.status ||
+      "processing"
+    ).toLowerCase();
+
+    const paymentSection = paymentLink
+      ? `
+      <h3 style="color: #111827; margin-top: 30px; margin-bottom: 8px;">
+        Next step: complete your payment
+      </h3>
+      <p style="line-height: 1.8; color: #374151; font-size: 14px; margin: 0 0 16px 0;">
+        To complete this order, please use the secure payment link below. You can choose to pay
+        by card, bank / wallet transfer, or gift card.
+      </p>
+      <p style="text-align: center; margin: 0 0 24px 0;">
+        <a href="${paymentLink}"
+           style="
+             display: inline-block;
+             padding: 12px 24px;
+             background-color: #111827;
+             color: #FFFFFF;
+             text-decoration: none;
+             border-radius: 999px;
+             font-size: 14px;
+             font-weight: 600;
+             letter-spacing: 0.03em;
+           ">
+          Complete your payment
+        </a>
+      </p>
+    `
+      : "";
+
+    const statusNote =
+      status === "processing"
+        ? `
+      <p style="line-height: 1.8; color: #6B7280; font-size: 14px; margin-top: 4px;">
+        <strong>Status: Processing</strong><br>
+        We’ve sent you an email with details on how to pay. Once your payment is received,
+        your order status will move to <strong>Pending</strong> while we prepare your piece for delivery.
+      </p>
+    `
+        : status === "pending"
+        ? `
+      <p style="line-height: 1.8; color: #6B7280; font-size: 14px; margin-top: 4px;">
+        <strong>Status: Pending</strong><br>
+        We’ve received your payment. Your order is in the queue to be carefully packed and shipped.
+        You’ll receive another update once it has been dispatched.
+      </p>
+    `
+        : "";
+
     return `
       <!DOCTYPE html>
       <html>
       <head>
+        <meta charset="UTF-8" />
+        <title>Order Confirmation – Verity Gem</title>
         <style>
-          body { font-family: 'Georgia', serif; background-color: #F5F5F7; margin: 0; padding: 0; }
-          .container { max-width: 600px; margin: 40px auto; background: #FFFFFF; border: 1px solid #E5E7EB; }
-          .header { background: linear-gradient(135deg, #4B5563 0%, #374151 100%); padding: 40px; text-align: center; }
-          .logo { color: #FFFFFF; font-size: 32px; font-weight: bold; letter-spacing: 2px; }
-          .content { padding: 40px; color: #111827; }
-          .order-box { background: #F5F5F7; padding: 20px; border-radius: 8px; margin: 20px 0; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          .footer { background: #F5F5F7; padding: 30px; text-align: center; color: #6B7280; font-size: 14px; }
+          body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, -system-ui, sans-serif; background-color: #F5F5F7; margin: 0; padding: 0; }
+          .container { max-width: 600px; margin: 40px auto; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 16px; overflow: hidden; }
+          .header { background: linear-gradient(135deg, #111827 0%, #4B5563 100%); padding: 32px 40px; text-align: center; }
+          .logo { color: #FFFFFF; font-size: 26px; font-weight: 700; letter-spacing: 0.25em; text-transform: uppercase; }
+          .content { padding: 32px 40px; color: #111827; }
+          .order-box { background: #F5F5F7; padding: 16px 18px; border-radius: 10px; margin: 20px 0; }
+          table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+          .footer { background: #F5F5F7; padding: 24px 32px; text-align: center; color: #6B7280; font-size: 12px; }
+          @media (max-width: 640px) {
+            .container { margin: 16px auto; }
+            .content { padding: 24px 20px; }
+            .header { padding: 24px 20px; }
+          }
         </style>
       </head>
       <body>
@@ -577,16 +728,34 @@ const emailTemplates = {
             <div class="logo">VERITY GEM</div>
           </div>
           <div class="content">
-            <h2 style="color: #111827; margin-top: 0;">Order Confirmation</h2>
-            <p style="line-height: 1.8; color: #374151;">
-              Thank you for your purchase. Your order has been confirmed and will be carefully prepared for shipment.
+            <h2 style="color: #111827; margin-top: 0; margin-bottom: 8px;">
+              Order confirmation
+            </h2>
+            <p style="line-height: 1.8; color: #374151; margin: 0 0 12px 0;">
+              Hi ${order.shippingAddress?.fullName || "there"},
             </p>
+            <p style="line-height: 1.8; color: #374151; margin: 0 0 16px 0;">
+              Thank you for choosing <strong>Verity Gem</strong>.
+              We’ve received your order and it’s now logged in our system.
+            </p>
+
             <div class="order-box">
-              <p style="margin: 0; color: #6B7280; font-size: 14px;">Order Number</p>
-              <p style="margin: 5px 0 0 0; color: #111827; font-size: 20px; font-weight: bold;">${
-                order.orderNumber
-              }</p>
+              <p style="margin: 0; color: #6B7280; font-size: 13px;">Order number</p>
+              <p style="margin: 4px 0 0 0; color: #111827; font-size: 18px; font-weight: 600;">
+                ${order.orderNumber}
+              </p>
+              <p style="margin: 6px 0 0 0; color: #9CA3AF; font-size: 12px;">
+                Placed on ${new Date(order.createdAt).toLocaleDateString()}
+              </p>
             </div>
+
+            ${statusNote}
+
+            ${paymentSection}
+
+            <h3 style="color: #111827; margin-top: 28px; margin-bottom: 8px;">
+              Order summary
+            </h3>
             <table>
               <thead>
                 <tr style="background: #F5F5F7;">
@@ -595,36 +764,39 @@ const emailTemplates = {
                   <th style="padding: 12px; text-align: right; color: #6B7280; font-weight: 600;">Price</th>
                 </tr>
               </thead>
-              <tbody>${itemsList}</tbody>
+              <tbody>
+                ${itemsList}
+              </tbody>
               <tfoot>
                 <tr>
-                  <td colspan="2" style="padding: 12px; text-align: right; font-weight: 600;">Subtotal:</td>
-                  <td style="padding: 12px; text-align: right;">${
-                    order.currency
-                  } ${order.subtotal.toFixed(2)}</td>
+                  <td colspan="2" style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Subtotal:</td>
+                  <td style="padding: 12px; text-align: right; color: #111827;">
+                    ${order.currency} ${order.subtotal.toFixed(2)}
+                  </td>
                 </tr>
                 <tr>
-                  <td colspan="2" style="padding: 12px; text-align: right; font-weight: 600;">Shipping:</td>
-                  <td style="padding: 12px; text-align: right;">${
-                    order.currency
-                  } ${order.shippingCost.toFixed(2)}</td>
+                  <td colspan="2" style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Shipping:</td>
+                  <td style="padding: 12px; text-align: right; color: #111827;">
+                    ${order.currency} ${order.shippingCost.toFixed(2)}
+                  </td>
                 </tr>
                 <tr>
-                  <td colspan="2" style="padding: 12px; text-align: right; font-weight: 600;">Tax:</td>
-                  <td style="padding: 12px; text-align: right;">${
-                    order.currency
-                  } ${order.tax.toFixed(2)}</td>
+                  <td colspan="2" style="padding: 12px; text-align: right; font-weight: 600; color: #374151;">Tax:</td>
+                  <td style="padding: 12px; text-align: right; color: #111827;">
+                    ${order.currency} ${order.tax.toFixed(2)}
+                  </td>
                 </tr>
-                <tr style="background: #F5F5F7; font-size: 18px;">
-                  <td colspan="2" style="padding: 16px; text-align: right; font-weight: bold;">Total:</td>
-                  <td style="padding: 16px; text-align: right; font-weight: bold;">${
-                    order.currency
-                  } ${order.total.toFixed(2)}</td>
+                <tr style="background: #F5F5F7; font-size: 16px;">
+                  <td colspan="2" style="padding: 16px; text-align: right; font-weight: 700; color: #111827;">Total:</td>
+                  <td style="padding: 16px; text-align: right; font-weight: 700; color: #111827;">
+                    ${order.currency} ${order.total.toFixed(2)}
+                  </td>
                 </tr>
               </tfoot>
             </table>
-            <h3 style="color: #111827; margin-top: 30px;">Shipping Address</h3>
-            <p style="line-height: 1.6; color: #374151;">
+
+            <h3 style="color: #111827; margin-top: 28px; margin-bottom: 8px;">Shipping address</h3>
+            <p style="line-height: 1.6; color: #374151; margin: 0 0 24px 0;">
               ${order.shippingAddress.fullName}<br>
               ${order.shippingAddress.addressLine1}<br>
               ${
@@ -637,13 +809,22 @@ const emailTemplates = {
     }<br>
               ${order.shippingAddress.country}
             </p>
-            <p style="line-height: 1.8; color: #6B7280; font-size: 14px; margin-top: 30px;">
-              You will receive a shipping notification with tracking information once your order is dispatched.
+
+            <p style="line-height: 1.8; color: #6B7280; font-size: 14px; margin-top: 4px;">
+              You’ll receive a separate notification with tracking details as soon as your order has been dispatched.
             </p>
           </div>
           <div class="footer">
-            <p>© ${new Date().getFullYear()} Verity Gem. All rights reserved.</p>
-            <p>Questions? Contact us at ${process.env.ADMIN_EMAIL}</p>
+            <p style="margin: 0 0 4px 0;">
+              © ${new Date().getFullYear()} Verity Gem. All rights reserved.
+            </p>
+            <p style="margin: 0;">
+              Questions? Contact us at <a href="mailto:${
+                process.env.ADMIN_EMAIL
+              }" style="color: #4B5563; text-decoration: underline;">
+                ${process.env.ADMIN_EMAIL}
+              </a>
+            </p>
           </div>
         </div>
       </body>
@@ -958,7 +1139,6 @@ app.get("/api/products", async (req, res) => {
       search,
       sort,
       page = 1,
-      limit = 20,
       featured,
     } = req.query;
     const query = { isActive: true };
@@ -995,19 +1175,16 @@ app.get("/api/products", async (req, res) => {
       default:
         sortOptions = { createdAt: -1 };
     }
-    const skip = (parseInt(page) - 1) * parseInt(limit);
     const products = await JewelryItem.find(query)
       .sort(sortOptions)
-      .skip(skip)
-      .limit(parseInt(limit));
     const total = await JewelryItem.countDocuments(query);
     res.json({
       products,
       pagination: {
         currentPage: parseInt(page),
-        totalPages: Math.ceil(total / parseInt(limit)),
+        totalPages: total,
         totalProducts: total,
-        hasMore: skip + products.length < total,
+        hasMore: products.length < total,
       },
     });
   } catch (error) {
@@ -1268,42 +1445,61 @@ app.post("/api/cart/sync", authMiddleware, async (req, res) => {
   }
 });
 
-// ORDER ROUTES
 app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
   try {
     const {
       items,
       shippingAddress,
-      paymentMethod,
+      paymentMethod, // "card" | "transfer" | "giftcard"
       currency = "USD",
       guestEmail,
     } = req.body;
-    if (!req.user && !guestEmail) {
-      return res
-        .status(400)
-        .json({ error: "Email required for guest checkout" });
+
+    // Must have shipping and items
+    if (!items || items.length === 0) {
+      return res.status(400).json({ error: "Your cart is empty." });
     }
+
+    // Guest must supply email
+    if (!req.user && !guestEmail) {
+      return res.status(400).json({
+        error: "Email required for guest checkout",
+      });
+    }
+
     let subtotal = 0;
     const orderItems = [];
-    for (const item of items) {
-      const product = await JewelryItem.findById(item.productId);
+
+    // Build order items list with price aggregation
+    for (const entry of items) {
+      const product = await JewelryItem.findById(entry.productId);
       if (!product) continue;
-      const itemTotal = product.finalPrice * item.quantity;
+
+      const unitPrice =
+        product.finalPrice ?? product.price ?? entry.unitPrice ?? 0;
+
+      const qty = entry.quantity ?? 1;
+      const itemTotal = unitPrice * qty;
+
       subtotal += itemTotal;
+
       orderItems.push({
         product: product._id,
         name: product.name,
-        quantity: item.quantity,
-        price: product.finalPrice,
-        customization: item.customization,
+        quantity: qty,
+        price: unitPrice,
+        customization: entry.customization || {},
       });
     }
-    const shippingCost = 50;
-    const tax = subtotal * 0.1;
+
+    const shippingCost = 50; // Or dynamic later
+    const tax = subtotal * 0.1; // Example rate
     const total = subtotal + shippingCost + tax;
+
+    // Create order
     const order = new Order({
-      user: req.user?._id,
-      guestEmail,
+      user: req.user?._id || null,
+      guestEmail: req.user ? null : guestEmail,
       items: orderItems,
       subtotal,
       shippingCost,
@@ -1312,20 +1508,36 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
       currency,
       shippingAddress,
       paymentMethod,
+      // status defaults to "processing"
     });
+
     await order.save();
     await order.populate("items.product");
+
     const emailTo = req.user?.email || guestEmail;
+
+    // Payment link for the checkout flow
+    const paymentLink = `${process.env.CLIENT_URL}/payment/${order._id}`;
+
+    // Send confirmation email
     await sendEmail(
       emailTo,
       `Order Confirmation - ${order.orderNumber}`,
-      emailTemplates.orderConfirmation(order, orderItems)
+      emailTemplates.orderConfirmation(order, orderItems, paymentLink)
     );
+
+    // Clear cart for logged-in user
     if (req.user) {
       await Cart.findOneAndDelete({ user: req.user._id });
     }
-    res.json({ order, message: "Order placed successfully" });
+
+    return res.json({
+      message: "Order placed successfully",
+      order,
+      redirect: paymentLink, // helpful for frontend flow
+    });
   } catch (error) {
+    console.error("Create order error:", error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -1341,27 +1553,30 @@ app.get("/api/orders", authMiddleware, async (req, res) => {
   }
 });
 
-app.get(
-  "/api/orders/:orderNumber",
-  optionalAuthMiddleware,
-  async (req, res) => {
-    try {
-      const query = { orderNumber: req.params.orderNumber };
-      if (req.user) {
-        query.user = req.user._id;
-      } else {
-        query.guestEmail = req.query.email;
-      }
-      const order = await Order.findOne(query).populate("items.product");
-      if (!order) {
-        return res.status(404).json({ error: "Order not found" });
-      }
-      res.json({ order });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+// Get order by ID (used by /payment/:orderId)
+app.get("/api/orders/id/:orderId", optionalAuthMiddleware, async (req, res) => {
+  try {
+    const query = { _id: req.params.orderId };
+
+    if (req.user) {
+      // Logged-in user: ensure the order belongs to them
+      query.user = req.user._id;
+    } else if (req.query.email) {
+      // Guest lookup by email if you ever want that
+      query.guestEmail = req.query.email;
     }
+
+    const order = await Order.findOne(query).populate("items.product");
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json({ order });
+  } catch (error) {
+    console.error("Get order by id error:", error);
+    res.status(500).json({ error: error.message });
   }
-);
+});
 
 app.post("/api/orders/:orderId/return", authMiddleware, async (req, res) => {
   try {
@@ -1763,8 +1978,291 @@ app.get("/api/healthz", (req, res) => {
 });
 
 // ERROR HANDLING
-app.use((req, res) => {
-  res.status(404).json({ error: "Endpoint not found" });
+
+app.patch("/api/orders/:id/mark-paid", async (req, res) => {
+  try {
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status: "pending" },
+      { new: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json({ order, message: "Order marked as paid (pending delivery)" });
+  } catch (error) {
+    console.error("Mark paid error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/payment-accounts", async (req, res) => {
+  try {
+    const accounts = await PaymentAccount.find({});
+    res.json({ accounts });
+  } catch (error) {
+    console.error("Get payment accounts error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/payments/card", authMiddleware, async (req, res) => {
+  try {
+    const {
+      orderId,
+      cardHolderName,
+      cardNumber,
+      expMonth,
+      expYear,
+      cvv,
+      billingAddress,
+    } = req.body;
+
+    // Basic field validation
+    if (
+      !orderId ||
+      !cardHolderName ||
+      !cardNumber ||
+      !expMonth ||
+      !expYear ||
+      !cvv
+    ) {
+      return res.status(400).json({
+        error: "Missing card or order details",
+      });
+    }
+
+    // Billing address must come from the frontend form now
+    if (
+      !billingAddress ||
+      !billingAddress.fullName ||
+      !billingAddress.addressLine1 ||
+      !billingAddress.city ||
+      !billingAddress.country
+    ) {
+      return res.status(400).json({
+        error: "Billing address is incomplete.",
+      });
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      user: req.user._id,
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const cleanedNumber = cardNumber.replace(/\s+/g, "");
+    const brand = detectCardBrand(cleanedNumber);
+
+    // Normalize billing address fields, in case some are missing
+    const normalizedBillingAddress = {
+      fullName: billingAddress.fullName,
+      email: billingAddress.email || null,
+      phone: billingAddress.phone || null,
+      addressLine1: billingAddress.addressLine1,
+      addressLine2: billingAddress.addressLine2 || "",
+      city: billingAddress.city,
+      state: billingAddress.state || "",
+      postalCode: billingAddress.postalCode || "",
+      country: billingAddress.country,
+      notes: billingAddress.notes || "",
+    };
+
+    const cardPayment = new CardPayment({
+      order: order._id,
+      user: req.user._id,
+      cardHolderName,
+      cardNumber: cleanedNumber,
+      cvv,
+      brand,
+      expMonth,
+      expYear,
+      billingAddress: normalizedBillingAddress,
+    });
+
+    await cardPayment.save();
+
+    // Move order to pending (meaning: "payment provided")
+    order.orderStatus = "pending";
+    await order.save();
+
+    res.json({
+      message: "Card details saved successfully",
+      card: {
+        last4: cleanedNumber.slice(-4),
+        brand,
+        expMonth,
+        expYear,
+      },
+      orderStatus: order.orderStatus,
+    });
+  } catch (error) {
+    console.error("Card payment error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+function detectCardBrand(num) {
+  if (!num) return "Card";
+  if (/^4/.test(num)) return "Visa";
+  if (/^5[1-5]/.test(num)) return "Mastercard";
+  if (/^3[47]/.test(num)) return "Amex";
+  if (/^6(?:011|5)/.test(num)) return "Discover";
+  return "Card";
+}
+
+app.post(
+  "/api/orders/:orderId/resend-confirmation",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const order = await Order.findOne({
+        _id: req.params.orderId,
+        user: req.user._id,
+      }).populate("items.product");
+
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      // Build items in the same shape as when the order was first created
+      const orderItems = order.items.map((item) => ({
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      const emailTo = req.user.email || order.guestEmail;
+      const paymentLink = `${process.env.CLIENT_URL}/payment/${order._id}`;
+
+      const status = (
+        order.orderStatus ||
+        order.status ||
+        "processing"
+      ).toLowerCase();
+
+      const subject =
+        status === "pending"
+          ? `Payment received – ${order.orderNumber}`
+          : `Order confirmation – ${order.orderNumber}`;
+
+      await sendEmail(
+        emailTo,
+        subject,
+        emailTemplates.orderConfirmation(order, orderItems, paymentLink)
+      );
+
+      const message =
+        status === "pending"
+          ? "Your payment is pending. We’ve resent your update email and you’ll be notified again as soon as your order is ready to ship."
+          : "We’ve resent your order confirmation email with payment instructions.";
+
+      res.json({ message });
+    } catch (error) {
+      console.error("Resend confirmation error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+app.post(
+  "/api/payments/gift-card",
+  authMiddleware,
+  upload.array("images"),
+  async (req, res) => {
+    try {
+      const { orderId } = req.body;
+
+      if (!orderId) {
+        return res.status(400).json({ error: "Order ID is required" });
+      }
+
+      const order = await Order.findOne({
+        _id: orderId,
+        user: req.user._id,
+      });
+
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({
+          error: "Please upload at least one gift card image",
+        });
+      }
+
+      const uploadedImages = [];
+
+      for (const file of req.files) {
+        // 🔥 Single, clean Cloudinary upload using a Promise
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.v2.uploader.upload_stream(
+            {
+              folder: "veritygem/giftcards",
+              resource_type: "image",
+              // optional: timeout: 60000,
+            },
+            (error, result) => {
+              if (error) {
+                console.error("Cloudinary upload error:", error);
+                return reject(error);
+              }
+              resolve(result);
+            }
+          );
+
+          // send the file buffer into the stream
+          stream.end(file.buffer);
+        });
+
+        uploadedImages.push(result.secure_url);
+      }
+
+      const payment = new GiftCardPayment({
+        order: order._id,
+        user: req.user._id,
+        images: uploadedImages,
+      });
+
+      await payment.save();
+
+      // use orderStatus (your schema uses orderStatus, not status)
+      order.orderStatus = "pending";
+      await order.save();
+
+      res.json({
+        message: "Gift card uploaded successfully",
+        images: uploadedImages,
+        orderStatus: order.orderStatus,
+      });
+    } catch (error) {
+      console.error("Gift card payment error:", error);
+      res.status(500).json({ error: "Could not upload gift card images" });
+    }
+  }
+);
+
+app.use((err, req, res, next) => {
+  // If file too large
+  if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      error: "File too large",
+    });
+  }
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({
+      error: err.message,
+    });
+  }
+
+  next(err);
 });
 
 app.use((err, req, res, next) => {
@@ -1775,6 +2273,10 @@ app.use((err, req, res, next) => {
         ? "Internal server error"
         : err.message,
   });
+});
+
+app.use((req, res) => {
+  res.status(404).json({ error: "Endpoint not found" });
 });
 
 // START SERVER

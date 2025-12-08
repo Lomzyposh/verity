@@ -1,0 +1,1485 @@
+[
+  {
+    "name": "Knot Diamond Ring in 18k Rose Gold",
+    "slug": "knot-diamond-ring-18k-rose-gold",
+    "sku": "RING-001-KNOT-RG18",
+    "description": "An elegant knot-inspired ring crafted in 18k rose gold, pavé-set with round brilliant diamonds. A refined symbol of connection and timeless style.",
+    "category": "ring",
+    "subcategory": "fashion",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "rose",
+    "stoneType": "diamond",
+    "stoneColor": "near-colorless",
+    "gender": "womens",
+    "occasions": ["gift", "anniversary", "everyday"],
+    "styleTags": ["knot", "pavé", "rose gold", "modern", "elegant"],
+    "price": 1290,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/73904439_RG_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "18k rose gold knot diamond ring angled view",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/73904439_RG_SIO2X2?hei=1230&wid=1230&fmt=webp",
+        "alt": "18k rose gold knot diamond ring side profile",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/73904439_RG_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "18k rose gold knot diamond ring angled view",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/73904439_RG_ALT3X2?hei=2600&wid=2600&fmt=webp",
+        "alt": "18k rose gold knot diamond ring side profile",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.8,
+    "reviewCount": 0,
+    "stock": 10,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "Knot Diamond Pendant in 18k Yellow Gold",
+    "slug": "knot-diamond-pendant-18k-yellow-gold",
+    "sku": "PEND-002-KNOT-YG18",
+    "description": "A modern knot-inspired pendant crafted in 18k yellow gold and pavé-set with brilliant diamonds. A refined symbol of strength, connection and elegance.",
+    "category": "necklace",
+    "subcategory": "pendant",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "yellow",
+    "stoneType": "diamond",
+    "stoneColor": "near-colorless",
+    "gender": "womens",
+    "occasions": ["gift", "anniversary", "birthday"],
+    "styleTags": ["knot", "modern", "yellow gold", "delicate", "elegant"],
+    "price": 1890,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/68887216_PDT_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "18k yellow gold knot pendant front angle",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/68887216_PDT_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "18k yellow gold knot pendant close-up",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/68887216_PDT_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "18k yellow gold knot pendant on model",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/68887216_PDT_ALT3X2?hei=1230&wid=1230&fmt=webp",
+        "alt": "Detail of diamond setting in knot pendant",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.7,
+    "reviewCount": 0,
+    "stock": 15,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "Micro Link Bracelet in 18k Yellow Gold",
+    "slug": "micro-link-bracelet-18k-yellow-gold",
+    "sku": "BRACELET-001-ML-YG18",
+    "description": "A refined micro-link bracelet crafted in 18k yellow gold, featuring polished sculptural links for a bold yet elegant silhouette.",
+    "category": "bracelet",
+    "subcategory": "fashion",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "yellow",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["everyday", "gift", "anniversary"],
+    "styleTags": ["hardwear", "link", "yellow gold", "modern", "bold"],
+    "price": 1500,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60416923_BLT_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "Micro link bracelet - yellow gold front",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60416923_BLT_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "Micro link bracelet - closeup",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60416923_BLT_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "Micro link bracelet side angle",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60416923_BLT_ALT3X3?hei=2600&wid=2600&fmt=webp",
+        "alt": "Styled micro link bracelet",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.7,
+    "reviewCount": 0,
+    "stock": 12,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "T Wire Bracelet in 18k Rose Gold",
+    "slug": "t-wire-bracelet-18k-rose-gold",
+    "sku": "BRACELET-002-TWIRE-RG18",
+    "description": "A warm and elegant interpretation of the iconic Tiffany T wire bracelet, crafted in stunning 18k rose gold.",
+    "category": "bracelet",
+    "subcategory": "fashion",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "rose",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["gift", "birthday"],
+    "styleTags": ["rose gold", "tiffany t", "minimal"],
+    "price": 1350,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60010760_BLT_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "Rose gold t wire bracelet",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60010760_BLT_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "Rose gold bracelet styling",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60010760_BLT_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "Close-up rose gold bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60010760_BLT_ALT3X2?hei=1230&wid=1230&fmt=webp",
+        "alt": "Side angle rose t bracelet",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.6,
+    "reviewCount": 0,
+    "stock": 13,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "Olive Leaf Climber Earrings in 18k Yellow Gold",
+    "slug": "olive-leaf-climber-earrings-18k-yellow-gold",
+    "sku": "EARRING-001-OLIVE-YG18",
+    "description": "A graceful pair of olive leaf climber earrings crafted in 18k yellow gold, designed to trace the natural curve of the ear with a soft, organic shimmer.",
+    "category": "earrings",
+    "subcategory": "fashion",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "yellow",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["everyday", "gift", "special occasion"],
+    "styleTags": [
+      "olive leaf",
+      "climber",
+      "yellow gold",
+      "nature inspired",
+      "elegant"
+    ],
+    "price": 1225,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60702543_ER_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "Olive leaf climber earrings front view",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60702543_ER_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "Olive leaf climber earrings angled view",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60702543_ER_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "Olive leaf climber earrings close-up details",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60702543_ER_ALT3X2?hei=1230&wid=1230&fmt=webp",
+        "alt": "Olive leaf climber earrings close-up details",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.8,
+    "reviewCount": 0,
+    "stock": 20,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+
+  {
+    "name": "Medium Link Earrings in 18k Yellow Gold",
+    "slug": "medium-link-earrings-18k-yellow-gold",
+    "sku": "EARRING-002-LINK-YG18",
+    "description": "A bold pair of sculptural medium-link earrings crafted in 18k yellow gold, featuring polished industrial-inspired links for a modern, confident silhouette.",
+    "category": "earring",
+    "subcategory": "fashion",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "yellow",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["events", "night out", "gift"],
+    "styleTags": ["hardwear", "link", "bold", "yellow gold", "modern"],
+    "price": 3500,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/74366198_ER_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "Medium link earrings front view",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/74366198_ER_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "Medium link earrings detailed close-up",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/74366198_ER_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "Medium link earrings styled shot",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/74366198_ER_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "Medium link earrings styled shot",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.9,
+    "reviewCount": 0,
+    "stock": 10,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Soleste Aquamarine Pendant in Platinum with Diamonds",
+    "slug": "verity-soleste-aquamarine-pendant-platinum-diamonds",
+    "sku": "PENDANT-003-SOLESTE-PLAQ",
+    "description": "A luminous Verity Soleste pendant in platinum featuring a round aquamarine center stone surrounded by a halo of sparkling diamonds. A cool-toned statement piece that feels both luxurious and ethereal.",
+    "category": "necklace",
+    "subcategory": "pendant",
+    "metalType": "platinum",
+    "karat": null,
+    "metalColor": "silvery white",
+    "stoneType": "aquamarine",
+    "stoneColor": "light blue",
+    "gender": "womens",
+    "occasions": ["anniversary", "gift", "events", "evening"],
+    "styleTags": [
+      "verity soleste",
+      "halo pendant",
+      "aquamarine",
+      "platinum",
+      "luxury"
+    ],
+    "price": 3200,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60005423_PDT_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "Verity Soleste aquamarine and diamond halo pendant in platinum",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60005423_PDT_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "Verity Soleste aquamarine and diamond halo pendant in platinum",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60005423_PDT_ALT3X1?hei=1230&wid=1230&fmt=webp",
+        "alt": "Verity Soleste aquamarine and diamond halo pendant in platinum",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60005423_PDT_ALT3X2?hei=1230&wid=1230&fmt=webp",
+        "alt": "Verity Soleste aquamarine and diamond halo pendant in platinum",
+        "isPrimary": true
+      }
+    ],
+    "rating": 4.9,
+    "reviewCount": 0,
+    "stock": 8,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity HardWear Graduated Link Necklace in Sterling Silver",
+    "slug": "verity-hardwear-graduated-link-necklace-sterling-silver",
+    "sku": "NECKLACE-004-HARDWEAR-SS",
+    "description": "An edgy Verity HardWear graduated link necklace in sterling silver, designed with bold industrial-inspired links that taper toward the clasp for a strong, sculptural silhouette.",
+    "category": "necklace",
+    "subcategory": "chain",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["events", "night out", "everyday", "gift"],
+    "styleTags": [
+      "verity hardwear",
+      "link necklace",
+      "statement",
+      "sterling silver",
+      "modern"
+    ],
+    "price": 2450,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60153092_NL_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "Verity HardWear graduated link sterling silver necklace front view",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60153092_NL_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "Verity HardWear",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60153092_NL_SIO2X2?hei=1230&wid=1230&fmt=webp",
+        "alt": "Verity HardWear",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60153092_NL_ALT3X2?hei=2600&wid=2600&fmt=webp",
+        "alt": "Verity HardWear",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.8,
+    "reviewCount": 0,
+    "stock": 15,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Bean Pendant in 18k Yellow Gold, 9mm",
+    "slug": "verity-bean-pendant-18k-yellow-gold-9mm",
+    "sku": "PENDANT-005-BEAN-YG18-9MM",
+    "description": "A minimalist Verity Bean pendant crafted in warm 18k yellow gold. Its smooth organic shape symbolizes harmony and new beginnings, resting delicately on a refined chain for effortless elegance.",
+    "category": "necklace",
+    "subcategory": "pendant",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "yellow",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["everyday", "gift", "birthday", "anniversary"],
+    "styleTags": [
+      "verity bean",
+      "minimalist",
+      "organic",
+      "18k gold",
+      "classic"
+    ],
+    "price": 850,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60018409_PDT_MAIN1X1?hei=1256&wid=1256&fmt=webp",
+        "alt": "Verity Bean",
+        "isPrimary": true
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60018409_PDT_SIO2X1?hei=2600&wid=2600&fmt=webp",
+        "alt": "Verity Bean",
+        "isPrimary": false
+      },
+      {
+        "url": "https://media.tiffany.com/is/image/tco/60018409_PDT_ALT3X2?hei=1230&wid=1230&fmt=webp",
+        "alt": "Verity Bean",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.8,
+    "reviewCount": 0,
+    "stock": 22,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Sparkling Huggie Hoop Earrings in Sterling Silver",
+    "slug": "verity-sparkling-huggie-hoop-earrings-sterling-silver",
+    "sku": "EARRING-007-HUGGIE-SS",
+    "description": "A pair of sleek Verity huggie hoops crafted in polished sterling silver, accented with shimmering stones for a subtle yet radiant sparkle. Perfect for everyday shine or layering with other earrings.",
+    "category": "earring",
+    "subcategory": "hoop earrings",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "white",
+    "gender": "womens",
+    "occasions": ["everyday", "gift", "night out"],
+    "styleTags": [
+      "huggie",
+      "sparkling",
+      "sterling silver",
+      "minimalist",
+      "verity classic"
+    ],
+    "price": 38.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw255d595f/productimages/main_rect_center/293015C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling huggie hoop earrings sterling silver",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw668178c9/productimages/modeldetailshot_rect/293015C01_ABC123_MODEL_eCOM_02_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling huggie hoop earrings sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw668178c9/productimages/modeldetailshot_rect/293015C01_ABC123_MODEL_eCOM_02_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling huggie hoop earrings sterling silver",
+        "isPrimary": false
+      }
+    ],
+    "rating": 3.5,
+    "reviewCount": 524,
+    "stock": 40,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Elevated Heart Stud Earrings in Sterling Silver",
+    "slug": "verity-elevated-heart-stud-earrings-sterling-silver",
+    "sku": "EARRING-008-HEART-STUD-SS",
+    "description": "Romantic Verity heart-shaped stud earrings in sterling silver with elevated detailing for added dimension. A timeless symbol of affection, ideal for gifting or daily wear.",
+    "category": "earring",
+    "subcategory": "stud earrings",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "white",
+    "gender": "womens",
+    "occasions": ["romantic", "gift", "birthday", "everyday"],
+    "styleTags": [
+      "heart",
+      "stud",
+      "sterling silver",
+      "romantic",
+      "verity sweet"
+    ],
+    "price": 42.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw03e37ae3/productimages/main_rect_center/298427C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity elevated heart stud earrings sterling silver",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwa3ac074f/productimages/modelshot_rect/SS24_A_PDP_Model_Single_21_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity elevated heart stud earrings sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwbe1948da/productimages/modeldetailshot_rect/SS24_A_PDP_Model_Single_21_1x1_RGB_earring.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity elevated heart stud earrings sterling silver",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.2,
+    "reviewCount": 250,
+    "stock": 34,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Sparkling Infinity Heart Stud Earrings in 14k Gold Plating",
+    "slug": "verity-sparkling-infinity-heart-stud-earrings-14k-gold-plating",
+    "sku": "EARRING-009-INFINITY-HEART-14KGP",
+    "description": "Verity sparkling infinity heart stud earrings plated in warm 14k gold, adorned with micro pavé stones that trace the heart and infinity motif. A symbolic design that fuses romance with everyday elegance.",
+    "category": "earring",
+    "subcategory": "stud earrings",
+    "metalType": "gold",
+    "karat": 14,
+    "metalColor": "yellow",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "white",
+    "gender": "womens",
+    "occasions": ["romantic", "gift", "anniversary", "everyday"],
+    "styleTags": [
+      "infinity",
+      "heart",
+      "gold plated",
+      "sparkling",
+      "verity romance"
+    ],
+    "price": 49.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw40fb1d57/productimages/main_rect_center/262667C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity organically shaped pearl stud earrings in 14k gold plating",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw9391e8aa/productimages/modeldetailshot_rect/Q224_C_PDP_Model_Single_07_1x1_RGB_earring.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity organically shaped pearl stud earrings in 14k gold plating",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw6006e0ed/productimages/modelshot_rect/Q224_C_PDP_Model_Single_07_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity organically shaped pearl stud earrings in 14k gold plating",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.6,
+    "reviewCount": 34,
+    "stock": 28,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Organic Pearl Stud Earrings in 14k Gold Plating",
+    "slug": "verity-organic-pearl-stud-earrings-14k-gold-plating",
+    "sku": "EARRING-010-ORGANIC-PEARL-14KGP",
+    "description": "Organically shaped Verity stud earrings plated in 14k gold, each cradling a treated freshwater cultured pearl at the center. Soft curves and luminous pearl detail create an elegant, modern classic.",
+    "category": "earring",
+    "subcategory": "stud earrings",
+    "metalType": "gold",
+    "karat": 14,
+    "metalColor": "yellow",
+    "stoneType": "freshwater cultured pearl",
+    "stoneColor": "white",
+    "gender": "womens",
+    "occasions": ["events", "gift", "formal", "everyday"],
+    "styleTags": [
+      "pearl",
+      "organic shape",
+      "gold plated",
+      "minimalist",
+      "verity essence"
+    ],
+    "price": 47.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwac40b54f/productimages/main_rect_center/263295C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling infinity heart stud earrings in 14k gold plating",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwd82b5a50/productimages/modeldetailshot_rect/Q224_D_PDP_Model_Single_01_1x1_RGB_earring.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling infinity heart stud earrings in 14k gold plating",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw285f4e70/productimages/modelshot_rect/Q224_D_PDP_Model_Single_01_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling infinity heart stud earrings in 14k gold plating",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.3,
+    "reviewCount": 26,
+    "stock": 24,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Sparkling Infinity Stud Earrings in Sterling Silver",
+    "slug": "verity-sparkling-infinity-stud-earrings-sterling-silver",
+    "sku": "EARRING-011-INFINITY-STUD-SS",
+    "description": "Delicately crafted Verity infinity stud earrings in sterling silver, accented with pavé-set stones that add refined sparkle. A symbol of eternal connection, perfect for everyday or meaningful gifts.",
+    "category": "earring",
+    "subcategory": "stud earrings",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "white",
+    "gender": "womens",
+    "occasions": ["everyday", "gift", "romantic"],
+    "styleTags": [
+      "infinity",
+      "stud",
+      "sparkling",
+      "sterling silver",
+      "minimalist"
+    ],
+    "price": 28.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwae2f9fe7/productimages/main_rect_center/298820C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling infinity stud earrings in sterling silver",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwf3440577/productimages/modeldetailshot_rect/298820C01_ABC123_MODEL_eCOM_02_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling infinity stud earrings in sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwae2f9fe7/productimages/main_rect_center/298820C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling infinity stud earrings in sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwefb68be2/productimages/modelshot_rect/298820C01_ABC123_MODEL_eCOM_01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling infinity stud earrings in sterling silver",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.3,
+    "reviewCount": 1113,
+    "stock": 52,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Heart Clasp Snake Chain Bracelet in 14k Gold Plating",
+    "slug": "verity-heart-clasp-snake-chain-bracelet-14k-gold-plating",
+    "sku": "BRACELET-011-HEART-SNAKE-14KGP",
+    "description": "A refined Verity snake chain bracelet plated in luminous 14k gold, featuring a polished heart clasp that adds warmth and romantic charm. Perfect as a standalone piece or combined with other bracelets.",
+    "category": "bracelet",
+    "subcategory": "charm bracelet",
+    "metalType": "gold",
+    "karat": 14,
+    "metalColor": "yellow",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["gift", "romantic", "birthday", "everyday"],
+    "styleTags": [
+      "heart clasp",
+      "snake chain",
+      "gold plated",
+      "romantic",
+      "verity classic"
+    ],
+    "price": 89.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwc9417ff8/productimages/main_rect_center/563050C00_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity 14k gold plated heart clasp snake chain bracelet",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwe8384b74/productimages/modeldetailshot_rect/2025Q3E_collection_moments_go_ac_tp_pdp_model_besteller_12_1x1_V2_RGB_bracelet.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity 14k gold plated heart clasp snake chain bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw6a965b2c/productimages/singlepackshot_rect_center/563050C00_V2_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity 14k gold plated heart clasp snake chain bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwd0d2d2a0/productimages/modelshot_rect/2025Q3E_collection_moments_go_ac_tp_pdp_model_besteller_12_1x1_V2_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity 14k gold plated heart clasp snake chain bracelet",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.2,
+    "reviewCount": 56,
+    "stock": 35,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Heart & Snake Chain Bracelet in Sterling Silver",
+    "slug": "verity-heart-snake-chain-bracelet-sterling-silver",
+    "sku": "BRACELET-012-HEART-SNAKE-SS",
+    "description": "A sleek Verity snake chain bracelet crafted in polished sterling silver, highlighted with a heart-shaped clasp that blends minimalist style with sentimental elegance. Ideal for layering or gifting.",
+    "category": "bracelet",
+    "subcategory": "chain bracelet",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["gift", "everyday", "anniversary", "romantic"],
+    "styleTags": [
+      "heart clasp",
+      "snake chain",
+      "sterling silver",
+      "minimalist",
+      "verity"
+    ],
+    "price": 45.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw90631f74/productimages/main_rect_center/590719_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver heart snake chain bracelet",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwb825723d/productimages/modeldetailshot_rect/SS24_A_PDP_Model_Single_04_1x1_RGB_bracelet.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver heart snake chain bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwa554a62b/productimages/singlepackshot_rect_center/590719_V2_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver heart snake chain bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwb825723d/productimages/modeldetailshot_rect/SS24_A_PDP_Model_Single_04_1x1_RGB_bracelet.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver heart snake chain bracelet",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.6,
+    "reviewCount": 4028,
+    "stock": 50,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Pavé Cuban Chain Bracelet in Sterling Silver",
+    "slug": "verity-pave-cuban-chain-bracelet-sterling-silver",
+    "sku": "BRACELET-013-PAVE-CUBAN-SS",
+    "description": "A bold Verity pavé Cuban chain bracelet crafted in polished sterling silver, featuring a fully stone-set curb link pattern that delivers maximum brilliance. A luxurious standout piece ideal for gifting or elevated styling.",
+    "category": "bracelet",
+    "subcategory": "tennis bracelet",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "white",
+    "gender": "womens",
+    "occasions": ["events", "gift", "night out", "special occasions"],
+    "styleTags": [
+      "cuban chain",
+      "pavé",
+      "sterling silver",
+      "statement",
+      "luxury"
+    ],
+    "price": 119.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw15736ec2/productimages/main_rect_center/593008C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity pavé Cuban chain bracelet in sterling silver",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw8f7dfdcd/productimages/modeldetailshot_rect/2025Q3E_collection_moments_go_ac_tp_pdp_model_besteller_07_RGB_High_3x4_bracelet.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity pavé Cuban chain bracelet in sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwff180b87/productimages/singlepackshot_rect_center/593008C01_V2_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity pavé Cuban chain bracelet in sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw109d3434/productimages/styledmodelimage_rect/Q424_G_PDP_MODEL_STYLED_17_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity pavé Cuban chain bracelet in sterling silver",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.5,
+    "reviewCount": 1440,
+    "stock": 28,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Happy Birthday Charm Bracelet Set",
+    "slug": "verity-happy-birthday-charm-bracelet-set",
+    "sku": "BRACELET-014-BDAY-SET-SS",
+    "description": "A charming Verity birthday gift set featuring a sterling silver snake chain bracelet paired with a pink enamel ‘Happy Birthday’ charm. The perfect celebratory keepsake for someone special.",
+    "category": "bracelet",
+    "subcategory": "charm bracelet",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["birthday", "gift", "celebration"],
+    "styleTags": ["celebration", "birthday", "charm bracelet", "verity"],
+    "price": 89.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw556fab28/productimages/singlepackshot_rect_base/798888C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity Happy Birthday charm bracelet set in sterling silver with pink charm",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwa5afcc07/productimages/main_rect_base/NAMPS0149_2000x2000-min.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity Happy Birthday charm bracelet set in sterling silver with pink charm",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwfa99b194/productimages/singlepackshot_rect_base/590719_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity Happy Birthday charm bracelet set in sterling silver with pink charm",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw42521579/productimages/singlepackshot/NAMPS0790_5.png",
+        "alt": "Verity Happy Birthday charm bracelet set in sterling silver with pink charm",
+        "isPrimary": false
+      }
+    ],
+    "rating": 0,
+    "reviewCount": 0,
+    "stock": 22,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Sparkling Infinity Heart Clasp Snake Chain Bracelet in Sterling Silver",
+    "slug": "verity-sparkling-infinity-heart-clasp-snake-chain-bracelet-sterling-silver",
+    "sku": "BRACELET-015-INFINITY-HEART-SS",
+    "description": "A symbolic Verity snake chain bracelet crafted in sterling silver, featuring a sparkling infinity heart clasp that represents eternal love. Enhanced with pavé stones for a refined and elegant shimmer.",
+    "category": "bracelet",
+    "subcategory": "charm bracelet",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "white",
+    "gender": "womens",
+    "occasions": ["romantic", "gift", "anniversary", "everyday"],
+    "styleTags": [
+      "infinity",
+      "heart clasp",
+      "sterling silver",
+      "sparkling",
+      "snake chain"
+    ],
+    "price": 54.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 20,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw914656e4/productimages/styledmodelimage_rect/Q324_E_PDP_MODEL_STYLED_16_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver sparkling infinity heart clasp snake chain bracelet",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwd49754be/productimages/modeldetailshot_rect/592645C01_ABC123_MODEL_eCOM_02_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver sparkling infinity heart clasp snake chain bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwf0f8275d/productimages/singlepackshot_rect_center/592645C01_V2_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver sparkling infinity heart clasp snake chain bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw914656e4/productimages/styledmodelimage_rect/Q324_E_PDP_MODEL_STYLED_16_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver sparkling infinity heart clasp snake chain bracelet",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.3,
+    "reviewCount": 496,
+    "stock": 40,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Celestial Heart Clasp Bangle in Sterling Silver",
+    "slug": "verity-celestial-heart-clasp-bangle-sterling-silver",
+    "sku": "BRACELET-016-CELESTIAL-HEART-SS",
+    "description": "A celestial-inspired Verity bangle crafted in polished sterling silver, featuring an intricately detailed heart clasp with star-like cutouts. Elegant, symbolic and perfect for stacking or gifting.",
+    "category": "bracelet",
+    "subcategory": "bangle",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["gift", "romantic", "everyday", "special occasions"],
+    "styleTags": [
+      "celestial",
+      "heart clasp",
+      "sterling silver",
+      "bangle",
+      "minimalist"
+    ],
+    "price": 34.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 50,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw96c5ba75/productimages/main_rect_center/593400C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver celestial heart clasp bangle bracelet",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwfba41739/productimages/modelshot_rect/Q324_E_PDP_MODEL_SINGLE_46_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver celestial heart clasp bangle bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw914656e4/productimages/styledmodelimage_rect/Q324_E_PDP_MODEL_STYLED_16_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sterling silver celestial heart clasp bangle bracelet",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.3,
+    "reviewCount": 897,
+    "stock": 38,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity 14k Gold Heart Closure Snake Chain Bracelet",
+    "slug": "verity-14k-gold-heart-closure-snake-chain-bracelet",
+    "sku": "BRACELET-017-HEART-CLOSURE-14K",
+    "description": "A premium Verity snake chain bracelet crafted in solid-look 14k gold plating, featuring an elegant textured heart closure. A luxurious, symbolic piece perfect for gifting or statement layering.",
+    "category": "bracelet",
+    "subcategory": "charm bracelet",
+    "metalType": "gold",
+    "karat": 14,
+    "metalColor": "yellow",
+    "stoneType": null,
+    "stoneColor": null,
+    "gender": "womens",
+    "occasions": ["romantic", "gift", "anniversary", "special occasions"],
+    "styleTags": [
+      "heart clasp",
+      "gold",
+      "snake chain",
+      "luxury",
+      "verity signature"
+    ],
+    "price": 899.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 40,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw92256424/productimages/main_rect_center/559539C00_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity 14k gold heart closure snake chain bracelet",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw61d280c9/productimages/modeldetailshot_rect/559539C00_ABC123_MODEL_eCOM_02_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity 14k gold heart closure snake chain bracelet",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw7d17fb31/productimages/modelshot_rect/559539C00_ABC123_MODEL_eCOM_01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity 14k gold heart closure snake chain bracelet",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.4,
+    "reviewCount": 0,
+    "stock": 20,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Sparkling Pink Bow Ring",
+    "slug": "verity-sparkling-pink-bow-ring",
+    "sku": "RING-041-PINK-BOW-SILVER",
+    "description": "A delicate Verity silver band featuring a sparkling pink bow centerpiece crafted from premium cubic zirconia stones, perfect for romantic gifting or everyday elegance.",
+    "category": "ring",
+    "subcategory": "fashion",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "pink",
+    "gender": "womens",
+    "occasions": ["gift", "birthday", "romantic", "casual"],
+    "styleTags": ["bow", "pink", "sparkling", "minimalist", "verity signature"],
+    "price": 39.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 30,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwf026cf76/productimages/main_rect_center/193510C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling pink bow ring in sterling silver",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw27e87ad2/productimages/modeldetailshot_rect/Q424_G_PDP_MODEL_SINGLE_47_1x1_RGB_ring.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling pink bow ring in sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw73bb4751/productimages/modelshot_rect/Q424_G_PDP_MODEL_SINGLE_47_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling pink bow ring in sterling silver",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw73bb4751/productimages/modelshot_rect/Q424_G_PDP_MODEL_SINGLE_47_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity sparkling pink bow ring in sterling silver",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.5,
+    "reviewCount": 187,
+    "stock": 20,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+
+  {
+    "name": "Verity Enchanted Rose Ring",
+    "slug": "verity-enchanted-rose-ring",
+    "sku": "RING-042-ROSE-RED-14K",
+    "description": "A romantic Verity 14k gold-plated band featuring a sculpted red rose centerpiece surrounded by sparkling accents. Inspired by fairytales and timeless love.",
+    "category": "ring",
+    "subcategory": "statement",
+    "metalType": "gold",
+    "karat": 14,
+    "metalColor": "yellow",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "red",
+    "gender": "womens",
+    "occasions": ["anniversary", "romantic", "gift", "special"],
+    "styleTags": ["rose", "red", "gold-plated", "statement", "fairytale"],
+    "price": 54.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 40,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw0326194f/productimages/main_rect_center/163984C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity enchanted rose ring in 14k gold plating",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwaded2f76/productimages/modeldetailshot_rect/2025Q3E_collection_disney_go_ac_tp_pdp_model_single_19_1x1_RGB_ring.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity enchanted rose ring in 14k gold plating",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw19e2d794/productimages/singlepackshot_rect_center/163984C01_V2_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity enchanted rose ring in 14k gold plating",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw6d8f48ca/productimages/styledmodelimage_rect/2025Q3E_collection_disney_go_ac_tp_pdp_model_styled_08_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity enchanted rose ring in 14k gold plating",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.5,
+    "reviewCount": 41,
+    "stock": 20,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+
+  {
+    "name": "Verity Princess Tiara Pink Ring",
+    "slug": "verity-princess-tiara-pink-ring",
+    "sku": "RING-043-TIARA-PINK-14K",
+    "description": "A royal-inspired Verity 14k gold-plated ring featuring a pink gemstone tiara design. A perfect statement of elegance, beauty and feminine charm.",
+    "category": "ring",
+    "subcategory": "statement",
+    "metalType": "gold",
+    "karat": 14,
+    "metalColor": "yellow",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "pink",
+    "gender": "womens",
+    "occasions": ["gift", "special", "romantic", "fashion"],
+    "styleTags": ["tiara", "pink", "princess", "gold", "sparkling"],
+    "price": 54.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 40,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw3b3b9020/productimages/main_rect_center/163651C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity princess tiara ring in 14k gold plating with pink stones",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw5ce920b2/productimages/modeldetailshot_rect/Q125_A_PDP_MODEL_SINGLE_44_1x1_RGB_ring.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity princess tiara ring in 14k gold plating with pink stones",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwc06eb863/productimages/singlepackshot_rect_center/163651C01_V2_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity princess tiara ring in 14k gold plating with pink stones",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw91b6f0c2/productimages/styledmodelimage_rect/Q125_A_PDP_MODEL_STYLED_32_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity princess tiara ring in 14k gold plating with pink stones",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.5,
+    "reviewCount": 60,
+    "stock": 20,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  },
+  {
+    "name": "Verity Celestial Blue Moon Spark Ring",
+    "slug": "verity-celestial-blue-moon-spark-ring",
+    "sku": "RING-044-CELESTIAL-MOON-SILVER",
+    "description": "A mystical Verity sterling silver band featuring a crescent moon set with brilliant blue and clear stones. A celestial-inspired ring that channels clarity, elegance and cosmic charm.",
+    "category": "ring",
+    "subcategory": "stackable",
+    "metalType": "silver",
+    "karat": null,
+    "metalColor": "silver",
+    "stoneType": "cubic zirconia",
+    "stoneColor": "blue",
+    "gender": "womens",
+    "occasions": ["gift", "birthday", "romantic", "fashion"],
+    "styleTags": ["moon", "blue stone", "celestial", "sparkling", "stackable"],
+    "price": 34.99,
+    "currency": "USD",
+    "discount": {
+      "isActive": true,
+      "type": "percentage",
+      "value": 30,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwb0f32c70/productimages/main_rect_center/192675C01_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity celestial blue sparkling moon ring",
+        "isPrimary": true
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwd2a9bd39/productimages/modeldetailshot_rect/2025Q3E_collection_moments_go_ac_tp_pdp_model_besteller_13_RGB_High_3x4_ring.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity celestial blue sparkling moon ring",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dw491c40fa/productimages/singlepackshot_rect_center/192675C01_V3_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity celestial blue sparkling moon ring",
+        "isPrimary": false
+      },
+      {
+        "url": "https://us.pandora.net/dw/image/v2/AAVX_PRD/on/demandware.static/-/Sites-pandora-master-catalog/default/dwce65432b/productimages/styledmodelimage_rect/Q424_G_PDP_MODEL_STYLED_20_1x1_RGB.jpg?sw=810&sfrm=png&bgcolor=F7F7F7&q=70",
+        "alt": "Verity celestial blue sparkling moon ring",
+        "isPrimary": false
+      }
+    ],
+    "rating": 4.3,
+    "reviewCount": 276,
+    "stock": 20,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 20,
+      "price": 0
+    }
+  }
+]

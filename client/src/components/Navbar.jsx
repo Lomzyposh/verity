@@ -2,6 +2,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { ShoppingCart, Heart, Search, User } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useCart } from "../contexts/CartContext";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -10,8 +11,8 @@ export default function Navbar() {
   const ref = useRef(null);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { cartCount } = useCart();
 
-  // close dropdown when clicking outside
   useEffect(() => {
     const handler = (e) => {
       if (ref.current && !ref.current.contains(e.target)) {
@@ -47,11 +48,7 @@ export default function Navbar() {
         scrolled || !isHomepage ? "border-b" : ""
       }`}
       style={{
-        background: scrolled || !isHomepage ? "#FAFBFC" : "transparent",
-        borderColor:
-          scrolled || !isHomepage
-            ? "rgba(229,231,235,0.8)"
-            : "rgba(229,231,235,0.0)",
+        background: scrolled || !isHomepage ? "#FAFBFC" : "#00000080",
         backdropFilter: "blur(6px)",
       }}
     >
@@ -76,7 +73,6 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* CENTER LINKS (desktop) */}
         <div className="hidden md:flex flex-1 justify-center">
           <div className="flex items-center gap-8 text-sm font-medium">
             <NavLink
@@ -93,17 +89,24 @@ export default function Navbar() {
               scrolled={scrolled}
               isHomepage={isHomepage}
             />
-            <NavLink
+            {/* <NavLink
               to="/about"
               label="About"
               active={isActive("/about")}
               scrolled={scrolled}
               isHomepage={isHomepage}
-            />
+            /> */}
             <NavLink
               to="/contact"
               label="Contact"
               active={isActive("/contact")}
+              scrolled={scrolled}
+              isHomepage={isHomepage}
+            />
+            <NavLink
+              to="/orders"
+              label="Orders"
+              active={isActive("/orders")}
               scrolled={scrolled}
               isHomepage={isHomepage}
             />
@@ -112,14 +115,14 @@ export default function Navbar() {
 
         {/* RIGHT ICONS */}
         <div className="flex items-center gap-4">
-          <button
+          {/* <button
             type="button"
             className="p-2 rounded-full transition hover:bg-white/10"
             style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
             aria-label="Search"
           >
             <Search size={18} />
-          </button>
+          </button> */}
 
           <Link
             to="/favorites"
@@ -132,11 +135,26 @@ export default function Navbar() {
 
           <Link
             to="/cart"
-            className="p-2 rounded-full transition hover:bg-white/10"
+            className="p-2 rounded-full transition hover:bg-white/10 relative"
             style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
             aria-label="Cart"
           >
             <ShoppingCart size={18} />
+            {cartCount > 0 && (
+              <span
+                className="
+    bg-blue-500 
+    absolute -top-1 -right-1 
+    text-[10px] font-semibold 
+    w-5 h-5 
+    rounded-full 
+    flex items-center justify-center 
+    text-white
+  "
+              >
+                {cartCount}
+              </span>
+            )}
           </Link>
 
           {/* Account / Auth */}
@@ -211,7 +229,10 @@ export default function Navbar() {
                     Orders
                   </Link>
                   <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                      handleLogout();
+                      navigate("/");
+                    }}
                     className="w-full text-left px-3 py-2 rounded-md text-sm hover:bg-black/5"
                     style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
                   >
@@ -260,6 +281,13 @@ export default function Navbar() {
             to="/contact"
             label="Contact"
             active={isActive("/contact")}
+            scrolled={scrolled}
+            isHomepage={isHomepage}
+          />
+          <NavLink
+            to="/orders"
+            label="Orders"
+            active={isActive("/orders")}
             scrolled={scrolled}
             isHomepage={isHomepage}
           />

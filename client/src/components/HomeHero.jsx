@@ -22,7 +22,7 @@ export default function HomeHero() {
       className="w-full min-h-screen flex items-center justify-center relative pt-24 overflow-hidden"
       style={{ background: "#F5F5F7" }}
     >
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute overflow-hidden">
         <video
           ref={videoRef}
           src="/videos/heroVid.mp4"

@@ -1,0 +1,100 @@
+[{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15a9b"
+  },
+  "name": "Phones",
+  "slug": "phones",
+  "icon": "phone",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15a9c"
+  },
+  "name": "Tablets & iPads",
+  "slug": "tablets-ipads",
+  "icon": "tablet",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15a9d"
+  },
+  "name": "Game Consoles",
+  "slug": "game-consoles",
+  "icon": "gamepad",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15a9e"
+  },
+  "name": "Controllers & Accessories",
+  "slug": "controllers-accessories",
+  "icon": "controller",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15a9f"
+  },
+  "name": "Speakers",
+  "slug": "speakers",
+  "icon": "speaker",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15aa0"
+  },
+  "name": "Earbuds & Headphones",
+  "slug": "earbuds-headphones",
+  "icon": "headphones",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15aa1"
+  },
+  "name": "Power Banks",
+  "slug": "power-banks",
+  "icon": "battery",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15aa2"
+  },
+  "name": "Chargers & Cables",
+  "slug": "chargers-cables",
+  "icon": "bolt",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15aa3"
+  },
+  "name": "Smart Accessories",
+  "slug": "smart-accessories",
+  "icon": "watch",
+  "parent": null,
+  "isActive": true
+},
+{
+  "_id": {
+    "$oid": "6928e1a23ca005421eb15aa4"
+  },
+  "name": "Others",
+  "slug": "others",
+  "icon": "dots",
+  "parent": null,
+  "isActive": true
+}]
