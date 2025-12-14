@@ -145,7 +145,7 @@ export default function Checkout() {
 
   return (
     <main style={{ background: "#F5F5F7" }}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-28 pb-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-20 sm:pt-28 pb-10 sm:pb-20">
         {/* Back + title */}
         <button
           type="button"
@@ -192,7 +192,7 @@ export default function Checkout() {
             </Link>
           </section>
         ) : (
-          <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-10 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-6 lg:gap-10 items-start">
             {/* LEFT: FORM */}
             <section>
               <form
@@ -456,12 +456,12 @@ export default function Checkout() {
                     Choose how you’d like to pay for this order.
                   </p>
 
-                  <div className="grid sm:grid-cols-3 gap-3 mt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
                     {/* Card payment */}
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("card")}
-                      className="w-full text-left rounded-2xl p-3 sm:p-4 border flex flex-col gap-2 transition-all"
+                      className="w-full text-left rounded-2xl p-3 sm:p-4 lg:p-5 border flex flex-col gap-2 transition-all"
                       style={{
                         borderColor:
                           paymentMethod === "card" ? "#111827" : "#E5E7EB",
@@ -510,7 +510,7 @@ export default function Checkout() {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("transfer")}
-                      className="w-full text-left rounded-2xl p-3 sm:p-4 border flex flex-col gap-2 transition-all"
+                      className="w-full text-left rounded-2xl p-3 sm:p-4 lg:p-5 border flex flex-col gap-2 transition-all"
                       style={{
                         borderColor:
                           paymentMethod === "transfer" ? "#111827" : "#E5E7EB",
@@ -579,7 +579,7 @@ export default function Checkout() {
                     <button
                       type="button"
                       onClick={() => setPaymentMethod("giftcard")}
-                      className="w-full text-left rounded-2xl p-3 sm:p-4 border flex flex-col gap-2 transition-all"
+                      className="w-full text-left rounded-2xl p-3 sm:p-4 lg:p-5 border flex flex-col gap-2 transition-all"
                       style={{
                         borderColor:
                           paymentMethod === "giftcard" ? "#111827" : "#E5E7EB",
@@ -631,7 +631,7 @@ export default function Checkout() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full rounded-lg text-sm font-medium py-3 text-center mt-2 flex items-center justify-center gap-2"
+                  className="w-full rounded-lg text-sm font-medium py-3 sm:py-4 text-center mt-2 flex items-center justify-center gap-2"
                   style={{
                     background: "#111827",
                     color: "#FFFFFF",
@@ -653,10 +653,9 @@ export default function Checkout() {
               </form>
             </section>
 
-            {/* RIGHT: ORDER SUMMARY */}
-            <aside className="space-y-4">
+            <aside className="space-y-4 lg:sticky lg:top-4">
               <div
-                className="rounded-3xl border bg-white p-5 sm:p-6"
+                className="rounded-3xl border bg-white p-4 sm:p-5 lg:p-6"
                 style={{ borderColor: "#E5E7EB" }}
               >
                 <h2
@@ -774,7 +773,7 @@ export default function Checkout() {
 
               {/* Shipping note */}
               <div
-                className="rounded-2xl border bg-white p-4 text-xs space-y-2"
+                className="rounded-2xl border bg-white p-3 sm:p-4 text-xs space-y-2"
                 style={{ borderColor: "#E5E7EB" }}
               >
                 <div className="flex items-center gap-2">
