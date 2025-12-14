@@ -375,6 +375,9 @@ export default function Cart() {
 function EmptyCart() {
   return (
     <section className="flex flex-col items-center justify-center py-16">
+      <p className="text-sm mb-4" style={{ color: "#6B7280" }}>
+        You can check your orders on the <Link to="/orders" style={{ color: "#2563EB", textDecoration: "underline" }}>orders page</Link>.
+      </p>
       <p className="text-sm mb-3" style={{ color: "#6B7280" }}>
         Your bag is empty for now.
       </p>
