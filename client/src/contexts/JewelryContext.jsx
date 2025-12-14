@@ -29,7 +29,7 @@ export function JewelryProvider({ children }) {
 
       const { data } = await api.get("/api/products");
 
-      console.log("Fetched jewelry data:", data);
+      // console.log("Fetched jewelry data:", data);
       setJewelry(Array.isArray(data) ? data : data.products || []);
     } catch (err) {
       console.error("Error fetching jewelry:", err);

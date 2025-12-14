@@ -76,6 +76,13 @@ export default function Navbar() {
         <div className="hidden md:flex flex-1 justify-center">
           <div className="flex items-center gap-8 text-sm font-medium">
             <NavLink
+              to="/"
+              label="Home"
+              active={isActive("/")}
+              scrolled={scrolled}
+              isHomepage={isHomepage}
+            />
+            <NavLink
               to="/shop"
               label="Shop"
               active={isActive("/shop")}
@@ -124,14 +131,14 @@ export default function Navbar() {
             <Search size={18} />
           </button> */}
 
-          <Link
+          {/* <Link
             to="/favorites"
             className="p-2 rounded-full transition hover:bg-white/10"
             style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
             aria-label="Favorites"
           >
             <Heart size={18} />
-          </Link>
+          </Link> */}
 
           <Link
             to="/cart"
@@ -245,7 +252,6 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* MOBILE LINKS */}
       <div
         className="md:hidden border-t"
         style={{
@@ -256,6 +262,13 @@ export default function Navbar() {
         }}
       >
         <div className="flex items-center justify-center gap-6 py-3 text-xs font-medium">
+          <NavLink
+            to="/"
+            label="Home"
+            active={isActive("/")}
+            scrolled={scrolled}
+            isHomepage={isHomepage}
+          />
           <NavLink
             to="/shop"
             label="Shop"
@@ -270,13 +283,13 @@ export default function Navbar() {
             scrolled={scrolled}
             isHomepage={isHomepage}
           />
-          <NavLink
+          {/* <NavLink
             to="/about"
             label="About"
             active={isActive("/about")}
             scrolled={scrolled}
             isHomepage={isHomepage}
-          />
+          /> */}
           <NavLink
             to="/contact"
             label="Contact"

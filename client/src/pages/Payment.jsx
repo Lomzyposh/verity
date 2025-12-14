@@ -9,6 +9,7 @@ import {
   Gift,
   Package,
   Loader2,
+  X,
 } from "lucide-react";
 
 export default function Payment() {
@@ -46,8 +47,8 @@ export default function Payment() {
   const [billingSame, setBillingSame] = useState(true);
   const [cardSubmitting, setCardSubmitting] = useState(false);
 
-  // Gift card images
-  const [giftImages, setGiftImages] = useState([]);
+  // Gift card images (store file + preview url)
+  const [giftImages, setGiftImages] = useState([]); // [{ file, url }]
   const [giftSubmitting, setGiftSubmitting] = useState(false);
 
   useEffect(() => {
@@ -95,6 +96,14 @@ export default function Payment() {
     fetchWallets();
   }, []);
 
+  // Cleanup gift preview urls on unmount
+  useEffect(() => {
+    return () => {
+      giftImages.forEach((g) => URL.revokeObjectURL(g.url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCardChange = (e) => {
     const { name, value } = e.target;
     setCardForm((prev) => ({ ...prev, [name]: value }));
@@ -113,7 +122,35 @@ export default function Payment() {
 
   const handleGiftImagesChange = (e) => {
     const files = Array.from(e.target.files || []);
-    setGiftImages(files);
+    if (!files.length) return;
+
+    // convert to {file, url}
+    const mapped = files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    // add to existing (so they can pick multiple times)
+    setGiftImages((prev) => [...prev, ...mapped]);
+
+    // allow selecting same file again later
+    e.target.value = "";
+  };
+
+  const removeGiftImage = (index) => {
+    setGiftImages((prev) => {
+      const next = [...prev];
+      const removed = next.splice(index, 1)[0];
+      if (removed?.url) URL.revokeObjectURL(removed.url);
+      return next;
+    });
+  };
+
+  const clearAllGiftImages = () => {
+    setGiftImages((prev) => {
+      prev.forEach((g) => URL.revokeObjectURL(g.url));
+      return [];
+    });
   };
 
   const total = useMemo(() => {
@@ -201,8 +238,8 @@ export default function Payment() {
 
       const formData = new FormData();
       formData.append("orderId", orderId);
-      giftImages.forEach((file) => {
-        formData.append("images", file);
+      giftImages.forEach((g) => {
+        formData.append("images", g.file);
       });
 
       await api.post("/api/payments/gift-card", formData, {
@@ -331,24 +368,18 @@ export default function Payment() {
                 className="rounded-3xl border bg-white p-5 sm:p-6 space-y-4"
                 style={{ borderColor: "#E5E7EB" }}
               >
-                <h2
-                  className="text-sm font-semibold"
-                  style={{ color: "#111827" }}
-                >
+                <h2 className="text-sm font-semibold" style={{ color: "#111827" }}>
                   Card payment
                 </h2>
                 <p className="text-xs" style={{ color: "#6B7280" }}>
-                  Your card details are stored securely for manual payment
-                  confirmation. In production, use a PCI-compliant provider like
-                  Stripe or Paystack instead of saving raw card data.
+                  Your card details are stored securely for manual payment confirmation.
+                  In production, use a PCI-compliant provider like Stripe or Paystack
+                  instead of saving raw card data.
                 </p>
 
                 <form onSubmit={handleCardSubmit} className="space-y-3">
                   <div className="space-y-1">
-                    <label
-                      className="text-xs font-medium"
-                      style={{ color: "#111827" }}
-                    >
+                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
                       Cardholder name
                     </label>
                     <input
@@ -366,17 +397,11 @@ export default function Payment() {
                   </div>
 
                   <div className="space-y-2 mb-3">
-                    <label
-                      className="text-xs font-medium"
-                      style={{ color: "#111827" }}
-                    >
+                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
                       Billing address
                     </label>
 
-                    <label
-                      className="flex items-center gap-2 text-xs"
-                      style={{ color: "#111827" }}
-                    >
+                    <label className="flex items-center gap-2 text-xs" style={{ color: "#111827" }}>
                       <input
                         type="checkbox"
                         checked={billingSame}
@@ -389,10 +414,7 @@ export default function Payment() {
                   {!billingSame && (
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <label
-                          className="text-xs font-medium"
-                          style={{ color: "#111827" }}
-                        >
+                        <label className="text-xs font-medium" style={{ color: "#111827" }}>
                           Full name
                         </label>
                         <input
@@ -410,10 +432,7 @@ export default function Payment() {
                       </div>
 
                       <div className="space-y-1">
-                        <label
-                          className="text-xs font-medium"
-                          style={{ color: "#111827" }}
-                        >
+                        <label className="text-xs font-medium" style={{ color: "#111827" }}>
                           Email
                         </label>
                         <input
@@ -431,10 +450,7 @@ export default function Payment() {
                       </div>
 
                       <div className="space-y-1">
-                        <label
-                          className="text-xs font-medium"
-                          style={{ color: "#111827" }}
-                        >
+                        <label className="text-xs font-medium" style={{ color: "#111827" }}>
                           Address line 1
                         </label>
                         <input
@@ -453,10 +469,7 @@ export default function Payment() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label
-                            className="text-xs font-medium"
-                            style={{ color: "#111827" }}
-                          >
+                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
                             City
                           </label>
                           <input
@@ -474,10 +487,7 @@ export default function Payment() {
                         </div>
 
                         <div className="space-y-1">
-                          <label
-                            className="text-xs font-medium"
-                            style={{ color: "#111827" }}
-                          >
+                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
                             State
                           </label>
                           <input
@@ -497,10 +507,7 @@ export default function Payment() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label
-                            className="text-xs font-medium"
-                            style={{ color: "#111827" }}
-                          >
+                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
                             Postal code
                           </label>
                           <input
@@ -518,10 +525,7 @@ export default function Payment() {
                         </div>
 
                         <div className="space-y-1">
-                          <label
-                            className="text-xs font-medium"
-                            style={{ color: "#111827" }}
-                          >
+                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
                             Country
                           </label>
                           <input
@@ -542,10 +546,7 @@ export default function Payment() {
                   )}
 
                   <div className="space-y-1">
-                    <label
-                      className="text-xs font-medium"
-                      style={{ color: "#111827" }}
-                    >
+                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
                       Card number
                     </label>
                     <input
@@ -565,10 +566,7 @@ export default function Payment() {
 
                   <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1">
-                      <label
-                        className="text-xs font-medium"
-                        style={{ color: "#111827" }}
-                      >
+                      <label className="text-xs font-medium" style={{ color: "#111827" }}>
                         Exp. month
                       </label>
                       <input
@@ -586,10 +584,7 @@ export default function Payment() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label
-                        className="text-xs font-medium"
-                        style={{ color: "#111827" }}
-                      >
+                      <label className="text-xs font-medium" style={{ color: "#111827" }}>
                         Exp. year
                       </label>
                       <input
@@ -607,10 +602,7 @@ export default function Payment() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label
-                        className="text-xs font-medium"
-                        style={{ color: "#111827" }}
-                      >
+                      <label className="text-xs font-medium" style={{ color: "#111827" }}>
                         CVV
                       </label>
                       <input
@@ -638,9 +630,7 @@ export default function Payment() {
                       opacity: cardSubmitting ? 0.85 : 1,
                     }}
                   >
-                    {cardSubmitting && (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
+                    {cardSubmitting && <Loader2 size={16} className="animate-spin" />}
                     {cardSubmitting ? "Please wait...." : "Continue"}
                   </button>
                 </form>
@@ -652,49 +642,30 @@ export default function Payment() {
                 className="rounded-3xl border bg-white p-5 sm:p-6 space-y-4"
                 style={{ borderColor: "#E5E7EB" }}
               >
-                <h2
-                  className="text-sm font-semibold"
-                  style={{ color: "#111827" }}
-                >
+                <h2 className="text-sm font-semibold" style={{ color: "#111827" }}>
                   Bank / wallet transfer
                 </h2>
 
                 <p className="text-xs" style={{ color: "#6B7280" }}>
-                  Send the exact order amount to any of the accounts below.
-                  After payment, reply the email you received with your proof of
-                  payment for faster confirmation.
+                  Send the exact order amount to any of the accounts below. After payment,
+                  reply the email you received with your proof of payment for faster confirmation.
                 </p>
 
                 <div
-                  className="
-    rounded-xl px-4 py-3 text-xs
-    flex flex-col sm:flex-row 
-    sm:items-center sm:gap-2
-    bg-green-100
-  "
-                  style={{
-                    color: "#374151",
-                    border: "1px solid #E5E7EB",
-                  }}
+                  className="rounded-xl px-4 py-3 text-xs flex flex-col sm:flex-row sm:items-center sm:gap-2 bg-green-100"
+                  style={{ color: "#374151", border: "1px solid #E5E7EB" }}
                 >
                   <span className="font-medium text-center sm:text-left">
                     Note: Send Receipt to
                   </span>
 
                   <span
-                    className="
-      font-semibold 
-      text-center sm:text-left 
-      text-[#111827]
-      break-all
-    "
+                    className="font-semibold text-center sm:text-left text-[#111827] break-all"
                   >
                     alaminolomo@gmail.com
                   </span>
 
-                  <span className="text-center sm:text-left">
-                    for confirmation.
-                  </span>
+                  <span className="text-center sm:text-left">for confirmation.</span>
                 </div>
 
                 {loadingWallets ? (
@@ -728,27 +699,20 @@ export default function Payment() {
                             >
                               {acc.displayName || acc.name}
                             </p>
-                            <p
-                              className="text-[11px] truncate"
-                              style={{ color: "#6B7280" }}
-                            >
+                            <p className="text-[11px] truncate" style={{ color: "#6B7280" }}>
                               {acc.details}
                             </p>
                           </div>
                         </div>
                         <div className="text-[11px] text-right">
                           {acc.accountNumber && (
-                            <p style={{ color: "#111827" }}>
-                              {acc.accountNumber}
-                            </p>
+                            <p style={{ color: "#111827" }}>{acc.accountNumber}</p>
                           )}
                           {acc.bankName && (
                             <p style={{ color: "#6B7280" }}>{acc.bankName}</p>
                           )}
                           {acc.type && (
-                            <p style={{ color: "#9CA3AF" }}>
-                              {acc.type.toUpperCase()}
-                            </p>
+                            <p style={{ color: "#9CA3AF" }}>{acc.type.toUpperCase()}</p>
                           )}
                         </div>
                       </div>
@@ -763,51 +727,93 @@ export default function Payment() {
                 className="rounded-3xl border bg-white p-5 sm:p-6 space-y-4"
                 style={{ borderColor: "#E5E7EB" }}
               >
-                <h2
-                  className="text-sm font-semibold"
-                  style={{ color: "#111827" }}
-                >
+                <h2 className="text-sm font-semibold" style={{ color: "#111827" }}>
                   Pay with gift card
                 </h2>
                 <p className="text-xs" style={{ color: "#6B7280" }}>
                   Upload clear photos of your gift card. It’s best to send{" "}
-                  <span className="font-semibold">
-                    both the front and back images
-                  </span>{" "}
+                  <span className="font-semibold">both the front and back images</span>{" "}
                   for faster confirmation.
                 </p>
 
                 <form onSubmit={handleGiftSubmit} className="space-y-3">
                   <div className="space-y-1">
-                    <label
-                      className="text-xs font-medium"
-                      style={{ color: "#111827" }}
-                    >
+                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
                       Gift card images
                     </label>
+
                     <input
+                      id="gift-images"
                       type="file"
                       accept="image/*"
                       multiple
                       onChange={handleGiftImagesChange}
-                      className="w-full text-xs"
+                      className="hidden"
                     />
+
+                    <label
+                      htmlFor="gift-images"
+                      className="flex items-center justify-center h-11 w-full cursor-pointer rounded-xl border text-xs font-medium transition hover:bg-slate-50"
+                      style={{
+                        borderColor: "rgba(17,24,39,0.12)",
+                        color: "#111827",
+                      }}
+                    >
+                      {giftImages.length > 0
+                        ? `${giftImages.length} photo(s) selected`
+                        : "📸 Choose photos"}
+                    </label>
+
                     <p className="text-[11px]" style={{ color: "#9CA3AF" }}>
                       You can upload multiple images (front, back, close-ups).
                     </p>
                   </div>
 
+                  {/* Previews with remove */}
                   {giftImages.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {giftImages.map((file, idx) => (
-                        <div
-                          key={idx}
-                          className="w-16 h-16 rounded-lg overflow-hidden bg-[#F3F4F6] flex items-center justify-center text-[10px]"
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-medium" style={{ color: "#111827" }}>
+                          Selected images
+                        </p>
+                        <button
+                          type="button"
+                          onClick={clearAllGiftImages}
+                          className="text-xs underline"
                           style={{ color: "#6B7280" }}
                         >
-                          {file.name.slice(0, 10)}…
-                        </div>
-                      ))}
+                          Remove all
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                        {giftImages.map((g, idx) => (
+                          <div
+                            key={g.url}
+                            className="relative rounded-xl overflow-hidden border bg-[#F9FAFB]"
+                            style={{ borderColor: "#E5E7EB" }}
+                          >
+                            <img
+                              src={g.url}
+                              alt={`Gift card ${idx + 1}`}
+                              className="w-full h-24 object-cover"
+                            />
+
+                            <button
+                              type="button"
+                              onClick={() => removeGiftImage(idx)}
+                              className="absolute top-2 right-2 h-7 w-7 rounded-full flex items-center justify-center shadow-sm"
+                              style={{
+                                background: "rgba(17,24,39,0.75)",
+                                color: "#FFFFFF",
+                              }}
+                              aria-label="Remove image"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -821,12 +827,8 @@ export default function Payment() {
                       opacity: giftSubmitting ? 0.85 : 1,
                     }}
                   >
-                    {giftSubmitting && (
-                      <Loader2 size={16} className="animate-spin" />
-                    )}
-                    {giftSubmitting
-                      ? "Uploading gift card…"
-                      : "Submit gift card for review"}
+                    {giftSubmitting && <Loader2 size={16} className="animate-spin" />}
+                    {giftSubmitting ? "Uploading gift card…" : "Submit gift card for review"}
                   </button>
                 </form>
               </div>
@@ -839,10 +841,7 @@ export default function Payment() {
               className="rounded-3xl border bg-white p-5 sm:p-6"
               style={{ borderColor: "#E5E7EB" }}
             >
-              <h2
-                className="text-sm font-semibold mb-4"
-                style={{ color: "#111827" }}
-              >
+              <h2 className="text-sm font-semibold mb-4" style={{ color: "#111827" }}>
                 Order summary
               </h2>
 
@@ -852,9 +851,7 @@ export default function Payment() {
                   const qty = item.quantity ?? 1;
                   const lineTotal = (item.price ?? 0) * qty;
                   const img =
-                    product.images && product.images.length > 0
-                      ? product.images[0]
-                      : null;
+                    product.images && product.images.length > 0 ? product.images[0] : null;
 
                   return (
                     <div key={item._id} className="flex gap-3">
@@ -867,28 +864,18 @@ export default function Payment() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <span
-                              className="text-[10px]"
-                              style={{ color: "#9CA3AF" }}
-                            >
+                            <span className="text-[10px]" style={{ color: "#9CA3AF" }}>
                               No image
                             </span>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p
-                          className="text-xs font-medium truncate"
-                          style={{ color: "#111827" }}
-                        >
+                        <p className="text-xs font-medium truncate" style={{ color: "#111827" }}>
                           {product.name || "Jewelry piece"}
                         </p>
-                        <p
-                          className="text-[11px] mt-0.5"
-                          style={{ color: "#6B7280" }}
-                        >
-                          Qty {qty} ·{" "}
-                          {formatPrice(lineTotal, order.currency || "USD")}
+                        <p className="text-[11px] mt-0.5" style={{ color: "#6B7280" }}>
+                          Qty {qty} · {formatPrice(lineTotal, order.currency || "USD")}
                         </p>
                       </div>
                     </div>
@@ -896,10 +883,7 @@ export default function Payment() {
                 })}
               </div>
 
-              <div
-                className="space-y-2 text-sm border-t pt-4"
-                style={{ borderColor: "#E5E7EB" }}
-              >
+              <div className="space-y-2 text-sm border-t pt-4" style={{ borderColor: "#E5E7EB" }}>
                 <div className="flex items-center justify-between">
                   <span style={{ color: "#6B7280" }}>Subtotal</span>
                   <span style={{ color: "#111827" }}>
@@ -918,16 +902,10 @@ export default function Payment() {
                   className="flex items-center justify-between pt-2 border-t"
                   style={{ borderColor: "#E5E7EB" }}
                 >
-                  <span
-                    className="text-sm font-semibold"
-                    style={{ color: "#111827" }}
-                  >
+                  <span className="text-sm font-semibold" style={{ color: "#111827" }}>
                     Total
                   </span>
-                  <span
-                    className="text-sm font-semibold"
-                    style={{ color: "#111827" }}
-                  >
+                  <span className="text-sm font-semibold" style={{ color: "#111827" }}>
                     {formatPrice(total, currency)}
                   </span>
                 </div>
@@ -940,9 +918,8 @@ export default function Payment() {
             >
               <Package size={16} style={{ color: "#2563EB" }} />
               <p style={{ color: "#6B7280" }}>
-                This payment link was also sent to your email with your order
-                confirmation. You can always come back to complete payment from
-                there.
+                This payment link was also sent to your email with your order confirmation.
+                You can always come back to complete payment from there.
               </p>
             </div>
           </aside>

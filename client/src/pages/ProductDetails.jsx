@@ -417,7 +417,7 @@ export default function ProductDetail() {
                 </button>
               )}
 
-              <button
+              {/* <button
                 type="button"
                 className="w-full inline-flex items-center justify-center px-4 py-3 rounded-lg border text-sm font-medium"
                 style={{
@@ -428,7 +428,7 @@ export default function ProductDetail() {
               >
                 <Heart size={16} className="mr-2" />
                 Save
-              </button>
+              </button> */}
             </div>
 
             {/* TRUST / INFO STRIP */}

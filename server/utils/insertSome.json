@@ -1,0 +1,211 @@
+[
+  {
+    "name": "Rolex GMT-Master II Bruce Wayne Jubilee",
+    "slug": "rolex-gmt-master-ii-bruce-wayne-jubilee",
+    "sku": "WATCH-001-GMT2-BW-JUB",
+    "description": "A sleek GMT-Master II style watch with a black dial and a black-grey bezel look, paired with a jubilee-style bracelet for a refined luxury finish.",
+    "category": "watch",
+    "subcategory": "luxury",
+    "metalType": "stainless steel",
+    "karat": 18,
+    "metalColor": "silver",
+    "stoneType": "sapphire",
+    "stoneColor": "clear",
+    "gender": "mens",
+    "occasions": ["gift", "anniversary", "business", "evening-wear"],
+    "styleTags": ["gmt", "jubilee", "black dial", "luxury", "sport"],
+    "price": 22600,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://img.chrono24.com/images/uhren/43100030-qtmbl3ako6wjbd3y7npsznhd-Square420.jpg",
+        "alt": "Rolex GMT-Master II Bruce Wayne Jubilee watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/43100030-ymn7higylc87qy9mriy9jkxt-Square420.jpg",
+        "alt": "Rolex GMT-Master II Bruce Wayne Jubilee watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/43100030-pq4bwqi7qnsnp03pyll7ul35-Square420.jpg",
+        "alt": "Rolex GMT-Master II Bruce Wayne Jubilee watch",
+        "isPrimary": true
+      }
+    ],
+    "rating": 4.8,
+    "reviewCount": 0,
+    "stock": 1,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "Rolex GMT-Master II Pepsi Jubilee",
+    "slug": "rolex-gmt-master-ii-pepsi-jubilee",
+    "sku": "WATCH-002-GMT2-PEPSI-JUB",
+    "description": "A bold GMT-Master II style watch featuring the iconic red-blue bezel look with a black dial and jubilee-style bracelet — built for travel-ready elegance.",
+    "category": "watch",
+    "subcategory": "luxury",
+    "metalType": "stainless steel",
+    "karat": 18,
+    "metalColor": "silver",
+    "stoneType": "sapphire",
+    "stoneColor": "clear",
+    "gender": "mens",
+    "occasions": ["gift", "birthday", "travel", "business"],
+    "styleTags": ["pepsi bezel", "gmt", "jubilee", "iconic", "luxury"],
+    "price": 24850,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://img.chrono24.com/images/uhren/40929462-kuk7jmj81v20ua65hhe2u7pk-Square420.jpg",
+        "alt": "Rolex GMT-Master II Pepsi Jubilee watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/40929462-im3sa28wf4eid1tusvxoyj4o-Square420.jpg",
+        "alt": "Rolex GMT-Master II Pepsi Jubilee watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/40929462-cfs0yasy8afh7hml0rkrxqne-Square420.jpg",
+        "alt": "Rolex GMT-Master II Pepsi Jubilee watch",
+        "isPrimary": true
+      }
+    ],
+    "rating": 4.9,
+    "reviewCount": 0,
+    "stock": 1,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "Rolex GMT-Master II Rootbeer Rose Gold",
+    "slug": "rolex-gmt-master-ii-rootbeer-rose-gold",
+    "sku": "WATCH-003-GMT2-ROOTBEER-RG",
+    "description": "A luxury GMT-Master II style watch with a rich brown-black bezel look and rose-gold tone bracelet, delivering a warm, premium statement on the wrist.",
+    "category": "watch",
+    "subcategory": "luxury",
+    "metalType": "gold",
+    "karat": 18,
+    "metalColor": "rose",
+    "stoneType": "sapphire",
+    "stoneColor": "clear",
+    "gender": "mens",
+    "occasions": ["anniversary", "wedding", "gift", "evening-wear"],
+    "styleTags": ["rootbeer", "rose gold", "gmt", "statement", "luxury"],
+    "price": 96370,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://img.chrono24.com/images/uhren/43114257-i7saptu94bhd1gv4uxrfm6pr-Square420.jpg",
+        "alt": "Rolex GMT-Master II Rootbeer rose gold watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/43114257-8a6ulukiv3h8vpp8z7puigso-Square420.jpg",
+        "alt": "Rolex GMT-Master II Rootbeer rose gold watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/43114257-m22diffq8xd6yjkudo8maw5k-Square420.jpg",
+        "alt": "Rolex GMT-Master II Rootbeer rose gold watch",
+        "isPrimary": true
+      }
+    ],
+    "rating": 4.7,
+    "reviewCount": 0,
+    "stock": 1,
+    "isActive": true,
+    "isFeatured": true,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  },
+  {
+    "name": "Rolex GMT-Master II Black Dial Two-Tone",
+    "slug": "rolex-gmt-master-ii-black-dial-two-tone",
+    "sku": "WATCH-004-GMT2-BLACK-TT",
+    "description": "A two-tone GMT-Master II style watch with a black dial and gold-accented bracelet look, blending classic prestige with everyday strength.",
+    "category": "watch",
+    "subcategory": "luxury",
+    "metalType": "stainless steel",
+    "karat": 18,
+    "metalColor": "two-tone",
+    "stoneType": "sapphire",
+    "stoneColor": "clear",
+    "gender": "mens",
+    "occasions": ["gift", "business", "graduation", "evening-wear"],
+    "styleTags": ["two tone", "black dial", "gmt", "luxury", "classic"],
+    "price": 9395,
+    "currency": "USD",
+    "discount": {
+      "isActive": false,
+      "type": "percentage",
+      "value": 0,
+      "startsAt": null,
+      "endsAt": null
+    },
+    "images": [
+      {
+        "url": "https://img.chrono24.com/images/uhren/44025422-ra3f5l6p7tqlma4wgf6s02hg-Square420.jpg",
+        "alt": "Rolex GMT-Master II black dial two-tone watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/44025422-lbmebtpf4kkpj96z4qjwtr5z-Square420.jpg",
+        "alt": "Rolex GMT-Master II black dial two-tone watch",
+        "isPrimary": true
+      },
+      {
+        "url": "https://img.chrono24.com/images/uhren/44025422-23tn1fv7tzhzftfauwttdwyg-Square420.jpg",
+        "alt": "Rolex GMT-Master II black dial two-tone watch",
+        "isPrimary": true
+      }
+    ],
+    "rating": 4.6,
+    "reviewCount": 0,
+    "stock": 1,
+    "isActive": true,
+    "isFeatured": false,
+    "engraving": {
+      "available": false,
+      "maxLength": 0,
+      "price": 0
+    }
+  }
+]
+

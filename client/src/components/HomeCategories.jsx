@@ -2,41 +2,47 @@ import { Link } from "react-router-dom";
 
 const categories = [
   {
-    slug: "rings",
+    slug: "ring",
     label: "Rings",
     description: "Solitaire, eternity & statement rings for every moment.",
-    image: "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmluZ3N8ZW58MHx8MHx8fDA%3D",
+    image:
+      "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmluZ3N8ZW58MHx8MHx8fDA%3D",
   },
   {
-    slug: "necklaces",
+    slug: "necklace",
     label: "Necklaces",
     description: "Delicate chains, pendants and layered looks.",
-    image: "https://plus.unsplash.com/premium_photo-1681276170092-446cd1b5b32d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGpld2Vscnl8ZW58MHx8MHx8fDA%3D",
+    image:
+      "https://plus.unsplash.com/premium_photo-1681276170092-446cd1b5b32d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGpld2Vscnl8ZW58MHx8MHx8fDA%3D",
   },
   {
-    slug: "bracelets",
+    slug: "bracelet",
     label: "Bracelets",
     description: "Tennis bracelets, cuffs and everyday stacks.",
-    image: "/images/jew3.jpg",
+    image:
+      "https://tse1.explicit.bing.net/th/id/OIP.h5T87iuUa1-YRUM5rpixEAHaHa?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3",
   },
   {
-    slug: "earrings",
+    slug: "earring",
     label: "Earrings",
     description: "Hoops, studs and drops with timeless sparkle.",
-    image: "https://images.unsplash.com/photo-1590166223826-12dee1677420?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGpld2Vscnl8ZW58MHx8MHx8fDA%3D",
+    image:
+      "https://images.unsplash.com/photo-1590166223826-12dee1677420?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGpld2Vscnl8ZW58MHx8MHx8fDA%3D",
   },
   {
-    slug: "couple-rings",
-    label: "Couple Rings",
-    description: "Matching sets to celebrate your story together.",
-    image: "https://images.unsplash.com/photo-1561828995-aa79a2db86dd?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGpld2Vscnl8ZW58MHx8MHx8fDA%3D",
+    slug: "anklet",
+    label: "Anklets",
+    description: "Chic anklets to elevate your summer style.",
+    image:
+      "https://th.bing.com/th/id/R.0a97236f94c23bab3974bd6ac421a4bb?rik=yAMyb5IDq1kiCw&pid=ImgRaw&r=0",
   },
   {
-    slug: "watches",
+    slug: "watch",
     label: "Watches",
-    description: "Minimal timepieces with jewelry-level detail.",
-    image: "https://images.unsplash.com/photo-1620625515032-6ed0c1790c75?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8d2F0Y2hlc3xlbnwwfHwwfHx8MA%3D%3D",
-  },
+    description: "Elegant timepieces to complete your collection.",
+    image:
+      "https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8d2F0Y2hlc3xlbnwwfHwwfHx8MA%3D%3D",
+  }
 ];
 
 export default function HomeCategories() {
@@ -77,7 +83,7 @@ export default function HomeCategories() {
           {categories.map((cat) => (
             <Link
               key={cat.slug}
-              to={`/shop/${cat.slug}`}
+              to={`/shop?category=${cat.slug}`}
               className="group rounded-2xl overflow-hidden h-full flex flex-col justify-between transition-transform"
               style={{
                 background: "#FFFFFF",

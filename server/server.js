@@ -154,6 +154,7 @@ const jewelryItemSchema = new mongoose.Schema(
         "earring",
         "bracelet",
         "anklet",
+        "watch",
         "pendant",
         "set",
         "other",
@@ -396,25 +397,35 @@ const giftCardSchema = new mongoose.Schema({
 
 const GiftCard = mongoose.model("GiftCard", giftCardSchema);
 
-const blogPostSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  slug: { type: String, unique: true },
-  content: { type: String, required: true },
-  excerpt: String,
-  featuredImage: String,
-  category: String,
-  tags: [String],
-  isPublished: { type: Boolean, default: false },
-  publishedAt: Date,
-  createdAt: { type: Date, default: Date.now },
-});
+const blogPostSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    slug: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+      index: true,
+    },
 
-blogPostSchema.pre("save", function (next) {
-  if (this.isModified("title") && !this.slug) {
-    this.slug = slugify(this.title, { lower: true, strict: true });
-  }
-  next();
-});
+    excerpt: { type: String, default: "", trim: true },
+
+    content: { type: String, default: "" },
+    contentHtml: { type: String, default: "" },
+
+    category: { type: String, default: "General", index: true },
+    tags: { type: [String], default: [] },
+
+    coverUrl: { type: String, default: "" },
+    readTime: { type: String, default: "" },
+
+    published: { type: Boolean, default: true, index: true },
+    publishedAt: { type: Date, default: Date.now, index: true },
+  },
+  { timestamps: true }
+);
+
+blogPostSchema.index({ published: 1, publishedAt: -1 });
 
 const BlogPost = mongoose.model("BlogPost", blogPostSchema);
 
@@ -1175,8 +1186,7 @@ app.get("/api/products", async (req, res) => {
       default:
         sortOptions = { createdAt: -1 };
     }
-    const products = await JewelryItem.find(query)
-      .sort(sortOptions)
+    const products = await JewelryItem.find(query).sort(sortOptions);
     const total = await JewelryItem.countDocuments(query);
     res.json({
       products,
@@ -1856,7 +1866,6 @@ app.get("/api/blog/:slug", async (req, res) => {
   }
 });
 
-// CURRENCY CONVERSION
 app.get("/api/currency/rates", async (req, res) => {
   try {
     const { base = "USD" } = req.query;
@@ -2247,6 +2256,162 @@ app.post(
     }
   }
 );
+
+// CHANGE EMAIL
+app.patch("/api/user/email", authMiddleware, async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(401).json({ error: "Incorrect password" });
+
+    const nextEmail = String(email).toLowerCase().trim();
+
+    const taken = await User.findOne({
+      email: nextEmail,
+      _id: { $ne: user._id },
+    });
+    if (taken) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    user.email = nextEmail;
+    await user.save();
+
+    return res.json({
+      message: "Email updated",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        currency: user.currency,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// CHANGE PASSWORD
+app.patch("/api/user/password", authMiddleware, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res
+        .status(400)
+        .json({ error: "Current password and new password are required" });
+    }
+
+    if (String(newPassword).length < 6) {
+      return res
+        .status(400)
+        .json({ error: "Password too short (min 6 chars)" });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const ok = await bcrypt.compare(currentPassword, user.password);
+    if (!ok)
+      return res.status(401).json({ error: "Incorrect current password" });
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return res.json({ message: "Password updated" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/blog", async (req, res) => {
+  try {
+    const { q = "", category = "", page = "1", limit = "12" } = req.query;
+
+    const safePage = Math.max(parseInt(page, 10) || 1, 1);
+    const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 12, 1), 50);
+
+    const filter = { published: true };
+
+    if (category && category !== "All") {
+      filter.category = category;
+    }
+
+    if (q && String(q).trim()) {
+      const rx = new RegExp(String(q).trim(), "i");
+      filter.$or = [
+        { title: rx },
+        { excerpt: rx },
+        { category: rx },
+        { tags: rx },
+      ];
+    }
+
+    const total = await BlogPost.countDocuments(filter);
+
+    const posts = await BlogPost.find(filter)
+      .sort({ publishedAt: -1 })
+      .skip((safePage - 1) * safeLimit)
+      .limit(safeLimit)
+      .select("title slug excerpt category tags coverUrl readTime publishedAt");
+
+    res.json({
+      page: safePage,
+      limit: safeLimit,
+      total,
+      pages: Math.ceil(total / safeLimit),
+      posts,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+/**
+ * GET /api/blog/:slug
+ */
+app.get("/api/blog/:slug", async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    const post = await BlogPost.findOne({ slug, published: true });
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    res.json({
+      post: {
+        title: post.title,
+        slug: post.slug,
+        excerpt: post.excerpt,
+        content: post.content,
+        contentHtml: post.contentHtml,
+        category: post.category,
+        tags: post.tags,
+        coverUrl: post.coverUrl,
+        readTime: post.readTime,
+        publishedAt: post.publishedAt,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/dev/seed-blog", async (req, res) => {
+  const posts = req.body.posts || [];
+  const inserted = await BlogPost.insertMany(posts, { ordered: false });
+  res.json({ inserted: inserted.length });
+});
 
 app.use((err, req, res, next) => {
   // If file too large

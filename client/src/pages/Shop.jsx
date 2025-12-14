@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useJewelry } from "../contexts/JewelryContext";
 
@@ -19,9 +19,9 @@ const CATEGORY_TILES = [
     image: "https://media.tiffany.com/is/image/tco/2025_HOLIDAY_STILL_1x1_38-1",
   },
   {
-    key: "ring",
-    label: "Rings",
-    image: "https://media.tiffany.com/is/image/tco/2025_HOLIDAY_STILL_4X5_14-1",
+    key: "watch",
+    label: "Watches",
+    image: "https://tse4.mm.bing.net/th/id/OIP.kDiLzybU9KKKvtBj1IViWwHaHa?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3",
   },
 ];
 
@@ -31,12 +31,25 @@ export default function Shop() {
 
   const productsRef = useRef(null);
 
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get("category");
+    if (categoryParam) {
+      setActiveCategory(categoryParam);
+    }
+  }, []);
+
   const handleCategoryClick = (catKey) => {
     setActiveCategory((prev) => (prev === catKey ? "all" : catKey));
-    // wait for layout to settle then scroll to products list with offset for navbar
+
+    if (catKey !== "all") {
+      window.history.pushState(null, "", `?category=${catKey}`);
+    } else {
+      window.history.pushState(null, "", window.location.pathname);
+    }
     requestAnimationFrame(() => {
       if (!productsRef.current) return;
-      const NAVBAR_OFFSET = 84; // adjust if your navbar height differs
+      const NAVBAR_OFFSET = 84;
       const top =
         productsRef.current.getBoundingClientRect().top +
         window.scrollY -
@@ -163,7 +176,7 @@ export default function Shop() {
                 className="group flex flex-col text-left focus:outline-none"
               >
                 <div
-                  className="w-full aspect-4/5 rounded-2xl overflow-hidden mb-3 transition-transform group-hover:-translate-y-1"
+                  className="w-full aspect-5/5 rounded-2xl overflow-hidden mb-3 transition-transform group-hover:-translate-y-1"
                   style={{
                     background: "#E5E7EB",
                   }}
@@ -220,9 +233,7 @@ export default function Shop() {
             </select>
           </div>
 
-          {/* right side controls */}
           <div className="flex flex-wrap items-center gap-3">
-            {/* Category filter dropdown */}
             <div
               className="inline-flex items-center px-3 py-2 rounded-lg border bg-white text-xs sm:text-sm"
               style={{ borderColor: "#E5E7EB", color: "#111827" }}
@@ -238,6 +249,8 @@ export default function Shop() {
                 <option value="necklace">Necklaces</option>
                 <option value="earring">Earrings</option>
                 <option value="bracelet">Bracelets</option>
+                <option value="anklet">Anklets</option>
+                <option value="watch">Watches</option>
               </select>
             </div>
 
@@ -383,9 +396,7 @@ export default function Shop() {
                         </p>
 
                         {/* Discount Badge */}
-                        <span
-                          className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-400 text-blue-900"
-                        >
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-400 text-blue-900">
                           -{item.discount.value}%
                         </span>
                       </div>
