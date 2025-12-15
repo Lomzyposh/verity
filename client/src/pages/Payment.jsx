@@ -662,7 +662,7 @@ export default function Payment() {
                   <span
                     className="font-semibold text-center sm:text-left text-[#111827] break-all"
                   >
-                    alaminolomo@gmail.com
+                    veritygem47@gmail.com
                   </span>
 
                   <span className="text-center sm:text-left">for confirmation.</span>
