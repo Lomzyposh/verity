@@ -349,12 +349,12 @@ export default function Payment() {
                 active={activeMethod === "card"}
                 onClick={() => setActiveMethod("card")}
               />
-              <PaymentTab
+              {/* <PaymentTab
                 icon={Banknote}
                 label="Transfer / Wallet"
                 active={activeMethod === "transfer"}
                 onClick={() => setActiveMethod("transfer")}
-              />
+              /> */}
               <PaymentTab
                 icon={Gift}
                 label="Gift card"

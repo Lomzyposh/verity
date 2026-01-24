@@ -507,7 +507,7 @@ export default function Checkout() {
                     </button>
 
                     {/* Transfer / wallets */}
-                    <button
+                    {/* <button
                       type="button"
                       onClick={() => setPaymentMethod("transfer")}
                       className="w-full text-left rounded-2xl p-3 sm:p-4 lg:p-5 border flex flex-col gap-2 transition-all"
@@ -573,7 +573,7 @@ export default function Checkout() {
                           Others
                         </div>
                       </div>
-                    </button>
+                    </button> */}
 
                     {/* Gift card */}
                     <button

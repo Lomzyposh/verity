@@ -6,7 +6,6 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
-import sgMail from "@sendgrid/mail";
 import axios from "axios";
 import { body, validationResult } from "express-validator";
 import slugify from "slugify";
@@ -25,7 +24,7 @@ app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true,
-  })
+  }),
 );
 
 cloudinary.v2.config({
@@ -41,8 +40,6 @@ mongoose
   .then(() => console.log("✅ MongoDB Connected - Verity Gem"))
   .catch((err) => console.error("❌ MongoDB Connection Error:", err));
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -51,17 +48,17 @@ const upload = multer({
 });
 
 const smtpTransporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587, // Explicitly use STARTTLS port
-  secure: false, // false because we're using STARTTLS, not SSL 465
+  host: "smtp-relay.brevo.com",
+  port: 587,
+  secure: false, // STARTTLS
   auth: {
-    user: process.env.MAIL_USER, // your Gmail / business mail
-    pass: process.env.MAIL_PASS, // ⚠️ must be an App Password
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_KEY,
   },
-  pool: true, // reuse connections
+  pool: true,
   maxConnections: 3,
   maxMessages: 100,
-  connectionTimeout: 10000, // 10s
+  connectionTimeout: 10000,
   greetingTimeout: 10000,
   socketTimeout: 20000,
 });
@@ -81,7 +78,7 @@ async function sendResetCodeEmail(to, code) {
   `;
 
   await smtpTransporter.sendMail({
-    from: process.env.SMTP_USER || '"VerityGem" <no-reply@veritygem.com>',
+    from: `"${process.env.MAIL_FROM_NAME}" <${process.env.MAIL_FROM_EMAIL}>`,
     to,
     subject: "Your VerityGem password reset code",
     html,
@@ -89,33 +86,27 @@ async function sendResetCodeEmail(to, code) {
 }
 
 const sendEmail = async (to, subject, html) => {
+  const fromEmail = process.env.MAIL_FROM_EMAIL;
+  const fromName = process.env.MAIL_FROM_NAME || "Verity Gem";
+
+  if (!fromEmail) {
+    console.error("❌ MAIL_FROM_EMAIL is missing");
+    return false;
+  }
+
   try {
-    await sgMail.send({
+    const info = await smtpTransporter.sendMail({
+      from: `"${fromName}" <${fromEmail}>`,
       to,
-      from: {
-        email: process.env.SENDGRID_FROM_EMAIL,
-        name: process.env.SENDGRID_FROM_NAME,
-      },
       subject,
       html,
     });
-    console.log("✅ Email sent via SendGrid");
+
+    console.log("✅ Email sent via Brevo", info.messageId);
     return true;
   } catch (error) {
-    console.log("⚠️ SendGrid failed, trying SMTP...", error.message);
-    try {
-      await smtpTransporter.sendMail({
-        from: `"${process.env.SENDGRID_FROM_NAME}" <${process.env.SMTP_USER}>`,
-        to,
-        subject,
-        html,
-      });
-      console.log("✅ Email sent via SMTP");
-      return true;
-    } catch (smtpError) {
-      console.error("❌ Email sending failed:", smtpError.message);
-      return false;
-    }
+    console.error("❌ Brevo send failed:", error.message);
+    return false;
   }
 };
 
@@ -126,7 +117,7 @@ const imageSchema = new mongoose.Schema(
     alt: { type: String, trim: true },
     isPrimary: { type: Boolean, default: false },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const discountSchema = new mongoose.Schema(
@@ -137,7 +128,7 @@ const discountSchema = new mongoose.Schema(
     startsAt: Date,
     endsAt: Date,
   },
-  { _id: false }
+  { _id: false },
 );
 
 const jewelryItemSchema = new mongoose.Schema(
@@ -204,7 +195,7 @@ const jewelryItemSchema = new mongoose.Schema(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
-  }
+  },
 );
 
 jewelryItemSchema.virtual("finalPrice").get(function () {
@@ -282,7 +273,7 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const User = mongoose.model("User", userSchema);
@@ -422,7 +413,7 @@ const blogPostSchema = new mongoose.Schema(
     published: { type: Boolean, default: true, index: true },
     publishedAt: { type: Date, default: Date.now, index: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 blogPostSchema.index({ published: 1, publishedAt: -1 });
@@ -466,7 +457,7 @@ const paymentAccountSchema = new mongoose.Schema(
     logoUrl: String,
     active: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const PaymentAccount = mongoose.model("PaymentAccount", paymentAccountSchema);
@@ -511,7 +502,7 @@ const cardPaymentSchema = new mongoose.Schema(
       default: "stored",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const CardPayment = mongoose.model("CardPayment", cardPaymentSchema);
@@ -526,12 +517,12 @@ const giftCardPaymentSchema = new mongoose.Schema(
     },
     images: [String],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const GiftCardPayment = mongoose.model(
   "GiftCardPayment",
-  giftCardPaymentSchema
+  giftCardPaymentSchema,
 );
 
 const authMiddleware = async (req, res, next) => {
@@ -584,7 +575,7 @@ const convertCurrency = async (amount, fromCurrency, toCurrency) => {
       `${
         process.env.CURRENCY_API_URL ||
         "https://api.exchangerate-api.com/v4/latest"
-      }/${fromCurrency}`
+      }/${fromCurrency}`,
     );
     const rate = response.data.rates[toCurrency];
     return amount * rate;
@@ -654,7 +645,7 @@ const emailTemplates = {
           ${order.currency} ${item.price.toFixed(2)}
         </td>
       </tr>
-    `
+    `,
       )
       .join("");
 
@@ -702,14 +693,14 @@ const emailTemplates = {
       </p>
     `
         : status === "pending"
-        ? `
+          ? `
       <p style="line-height: 1.8; color: #6B7280; font-size: 14px; margin-top: 4px;">
         <strong>Status: Pending</strong><br>
         We’ve received your payment. Your order is in the queue to be carefully packed and shipped.
         You’ll receive another update once it has been dispatched.
       </p>
     `
-        : "";
+          : "";
 
     return `
       <!DOCTYPE html>
@@ -816,8 +807,8 @@ const emailTemplates = {
                   : ""
               }
               ${order.shippingAddress.city}, ${order.shippingAddress.state} ${
-      order.shippingAddress.postalCode
-    }<br>
+                order.shippingAddress.postalCode
+              }<br>
               ${order.shippingAddress.country}
             </p>
 
@@ -954,7 +945,7 @@ const emailTemplates = {
           </p>
           <p style="line-height: 1.8; color: #374151;">
             <strong>Preferred Date:</strong> ${new Date(
-              appointment.preferredDate
+              appointment.preferredDate,
             ).toLocaleDateString()}<br>
             <strong>Contact Email:</strong> ${appointment.email}
           </p>
@@ -1084,7 +1075,7 @@ app.post("/api/forgot-password", async (req, res) => {
     await sendEmail(
       email,
       "Password Reset Code - GoTickets",
-      `<h2>Password Reset</h2><p>Your reset code is: <strong>${code}</strong></p><p>This code expires in 1 hour.</p>`
+      `<h2>Password Reset</h2><p>Your reset code is: <strong>${code}</strong></p><p>This code expires in 1 hour.</p>`,
     );
 
     res.json({
@@ -1299,7 +1290,7 @@ app.delete("/api/favorites/:productId", authMiddleware, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     user.favorites = user.favorites.filter(
-      (id) => id.toString() !== req.params.productId
+      (id) => id.toString() !== req.params.productId,
     );
     await user.save();
     res.json({ message: "Removed from favorites", favorites: user.favorites });
@@ -1314,7 +1305,7 @@ app.get("/api/cart", optionalAuthMiddleware, async (req, res) => {
     let cart;
     if (req.user) {
       cart = await Cart.findOne({ user: req.user._id }).populate(
-        "items.product"
+        "items.product",
       );
     } else {
       const sessionId = req.query.sessionId;
@@ -1350,7 +1341,7 @@ app.post("/api/cart", optionalAuthMiddleware, async (req, res) => {
     const existingItem = cart.items.find(
       (item) =>
         item.product.toString() === productId &&
-        JSON.stringify(item.customization) === JSON.stringify(customization)
+        JSON.stringify(item.customization) === JSON.stringify(customization),
     );
     if (existingItem) {
       existingItem.quantity += quantity;
@@ -1413,7 +1404,7 @@ app.delete("/api/cart/:itemId", optionalAuthMiddleware, async (req, res) => {
       return res.status(404).json({ error: "Cart not found" });
     }
     cart.items = cart.items.filter(
-      (item) => item._id.toString() !== req.params.itemId
+      (item) => item._id.toString() !== req.params.itemId,
     );
     cart.updatedAt = Date.now();
     await cart.save();
@@ -1436,7 +1427,7 @@ app.post("/api/cart/sync", authMiddleware, async (req, res) => {
         (item) =>
           item.product.toString() === guestItem.productId &&
           JSON.stringify(item.customization) ===
-            JSON.stringify(guestItem.customization)
+            JSON.stringify(guestItem.customization),
       );
       if (existingItem) {
         existingItem.quantity += guestItem.quantity;
@@ -1535,7 +1526,7 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
     await sendEmail(
       emailTo,
       `Order Confirmation - ${order.orderNumber}`,
-      emailTemplates.orderConfirmation(order, orderItems, paymentLink)
+      emailTemplates.orderConfirmation(order, orderItems, paymentLink),
     );
 
     // Clear cart for logged-in user
@@ -1609,7 +1600,7 @@ app.post("/api/orders/:orderId/return", authMiddleware, async (req, res) => {
     await sendEmail(
       process.env.ADMIN_EMAIL,
       `Return Request - ${order.orderNumber}`,
-      `<p>Return requested for order ${order.orderNumber}</p><p>Reason: ${reason}</p>`
+      `<p>Return requested for order ${order.orderNumber}</p><p>Reason: ${reason}</p>`,
     );
     res.json({ message: "Return request submitted" });
   } catch (error) {
@@ -1692,14 +1683,14 @@ app.delete(
     try {
       const user = await User.findById(req.user._id);
       user.shippingAddresses = user.shippingAddresses.filter(
-        (addr) => addr._id.toString() !== req.params.addressId
+        (addr) => addr._id.toString() !== req.params.addressId,
       );
       await user.save();
       res.json({ addresses: user.shippingAddresses });
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  },
 );
 
 // GIFT CARD ROUTES
@@ -1769,7 +1760,7 @@ app.post("/api/gift-cards", async (req, res) => {
         </div>
       </body>
       </html>
-    `
+    `,
     );
     res.json({ giftCard: { code, amount, currency } });
   } catch (error) {
@@ -1808,7 +1799,7 @@ app.post("/api/appointments", async (req, res) => {
     await sendEmail(
       email,
       "Appointment Request Confirmation - Verity Gem",
-      emailTemplates.appointmentConfirmation(appointment)
+      emailTemplates.appointmentConfirmation(appointment),
     );
     await sendEmail(
       process.env.ADMIN_EMAIL,
@@ -1817,9 +1808,9 @@ app.post("/api/appointments", async (req, res) => {
       <p><strong>New appointment request received:</strong></p>
       <p>Name: ${name}<br>Email: ${email}<br>Phone: ${phone}<br>
       Preferred Date: ${new Date(
-        preferredDate
+        preferredDate,
       ).toLocaleDateString()}<br>Message: ${message}</p>
-    `
+    `,
     );
     res.json({ message: "Appointment request submitted successfully" });
   } catch (error) {
@@ -1875,7 +1866,7 @@ app.get("/api/currency/rates", async (req, res) => {
       `${
         process.env.CURRENCY_API_URL ||
         "https://api.exchangerate-api.com/v4/latest"
-      }/${base}`
+      }/${base}`,
     );
     res.json({ rates: response.data.rates, base });
   } catch (error) {
@@ -1995,7 +1986,7 @@ app.patch("/api/orders/:id/mark-paid", async (req, res) => {
     const order = await Order.findByIdAndUpdate(
       req.params.id,
       { status: "pending" },
-      { new: true }
+      { new: true },
     );
 
     if (!order) {
@@ -2165,7 +2156,7 @@ app.post(
       await sendEmail(
         emailTo,
         subject,
-        emailTemplates.orderConfirmation(order, orderItems, paymentLink)
+        emailTemplates.orderConfirmation(order, orderItems, paymentLink),
       );
 
       const message =
@@ -2178,7 +2169,7 @@ app.post(
       console.error("Resend confirmation error:", error);
       res.status(500).json({ error: error.message });
     }
-  }
+  },
 );
 
 app.post(
@@ -2225,7 +2216,7 @@ app.post(
                 return reject(error);
               }
               resolve(result);
-            }
+            },
           );
 
           // send the file buffer into the stream
@@ -2256,7 +2247,7 @@ app.post(
       console.error("Gift card payment error:", error);
       res.status(500).json({ error: "Could not upload gift card images" });
     }
-  }
+  },
 );
 
 // CHANGE EMAIL
