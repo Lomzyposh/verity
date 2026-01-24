@@ -86,26 +86,39 @@ async function sendResetCodeEmail(to, code) {
 }
 
 const sendEmail = async (to, subject, html) => {
-  const fromEmail = process.env.MAIL_FROM_EMAIL;
-  const fromName = process.env.MAIL_FROM_NAME || "Verity Gem";
-
-  if (!fromEmail) {
-    console.error("❌ MAIL_FROM_EMAIL is missing");
-    return false;
-  }
-
   try {
-    const info = await smtpTransporter.sendMail({
-      from: `"${fromName}" <${fromEmail}>`,
-      to,
-      subject,
-      html,
-    });
+    const fromEmail = process.env.MAIL_FROM_EMAIL;
+    const fromName = process.env.MAIL_FROM_NAME || "Verity Gem";
 
-    console.log("✅ Email sent via Brevo", info.messageId);
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error("Missing BREVO_API_KEY in env");
+    }
+    if (!fromEmail) {
+      throw new Error("Missing MAIL_FROM_EMAIL in env");
+    }
+
+    await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      {
+        sender: { name: fromName, email: fromEmail },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      },
+      {
+        headers: {
+          "api-key": process.env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+          accept: "application/json",
+        },
+        timeout: 20000,
+      }
+    );
+
+    console.log("✅ Email sent via Brevo API");
     return true;
-  } catch (error) {
-    console.error("❌ Brevo send failed:", error.message);
+  } catch (err) {
+    console.error("❌ Brevo API send failed:", err?.response?.data || err.message);
     return false;
   }
 };
