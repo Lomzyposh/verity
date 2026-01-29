@@ -112,13 +112,16 @@ const sendEmail = async (to, subject, html) => {
           accept: "application/json",
         },
         timeout: 20000,
-      }
+      },
     );
 
     console.log("✅ Email sent via Brevo API");
     return true;
   } catch (err) {
-    console.error("❌ Brevo API send failed:", err?.response?.data || err.message);
+    console.error(
+      "❌ Brevo API send failed:",
+      err?.response?.data || err.message,
+    );
     return false;
   }
 };
@@ -258,6 +261,8 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
     password: { type: String, required: true },
+    isAdmin: { type: Boolean, default: false, index: true },
+
     phone: { type: String, trim: true },
     shippingAddresses: [
       {
@@ -555,6 +560,22 @@ const authMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     res.status(401).json({ error: "Invalid or expired token" });
+  }
+};
+
+const adminMiddleware = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    if (!req.user.isAdmin) {
+      return res.status(403).json({ error: "Admin access required" });
+    }
+
+    next();
+  } catch (err) {
+    return res.status(500).json({ error: "Admin check failed" });
   }
 };
 
@@ -1056,6 +1077,7 @@ app.get("/api/auth/me", authMiddleware, (req, res) => {
       name: req.user.name,
       email: req.user.email,
       currency: req.user.currency,
+      isAdmin: !!req.user.isAdmin, // ✅ ADD THIS
     },
   });
 });
@@ -2418,6 +2440,194 @@ app.post("/api/dev/seed-blog", async (req, res) => {
   const inserted = await BlogPost.insertMany(posts, { ordered: false });
   res.json({ inserted: inserted.length });
 });
+
+/**
+ * =========================
+ * ADMIN ROUTES
+ * =========================
+ * All admin routes:
+ * - require authMiddleware
+ * - then adminMiddleware
+ */
+
+// 🔥 Admin quick dashboard counts (optional but useful)
+app.get(
+  "/api/admin/overview",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const [users, giftCards, cardPayments, giftCardPayments, orders] =
+        await Promise.all([
+          User.countDocuments({}),
+          GiftCard.countDocuments({}),
+          CardPayment.countDocuments({}),
+          GiftCardPayment.countDocuments({}),
+          Order.countDocuments({}),
+        ]);
+
+      res.json({
+        counts: { users, giftCards, cardPayments, giftCardPayments, orders },
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+// ✅ All users (with pagination + search)
+app.get(
+  "/api/admin/users",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { q = "", page = "1", limit = "20" } = req.query;
+
+      const safePage = Math.max(parseInt(page, 10) || 1, 1);
+      const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+      const filter = {};
+      if (q && String(q).trim()) {
+        const rx = new RegExp(String(q).trim(), "i");
+        filter.$or = [{ name: rx }, { email: rx }, { phone: rx }];
+      }
+
+      const total = await User.countDocuments(filter);
+
+      const users = await User.find(filter)
+        .select(
+          "-password -resetCode -resetCodeExpiresAt -resetPasswordToken -resetPasswordExpires",
+        )
+        .sort({ createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit);
+
+      res.json({
+        page: safePage,
+        limit: safeLimit,
+        total,
+        pages: Math.ceil(total / safeLimit),
+        users,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+// ===============================
+// ADMIN: GET ALL GIFT CARD PAYMENTS
+// ===============================
+app.get(
+  "/api/admin/giftcard-payments",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { page = 1, limit = 20 } = req.query;
+
+      const safePage = Math.max(parseInt(page), 1);
+      const safeLimit = Math.min(Math.max(parseInt(limit), 1), 100);
+
+      const total = await GiftCardPayment.countDocuments();
+
+      const giftCardPayments = await GiftCardPayment.find()
+        .sort({ createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit)
+        .populate("user", "name email")
+        .populate("order", "orderNumber total currency orderStatus");
+
+      res.json({
+        page: safePage,
+        limit: safeLimit,
+        total,
+        pages: Math.ceil(total / safeLimit),
+        giftCardPayments,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+// ✅ All "card payments" (this is your stored card form records)
+app.get(
+  "/api/admin/card-payments",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { page = "1", limit = "20" } = req.query;
+
+      const safePage = Math.max(parseInt(page, 10) || 1, 1);
+      const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+      const total = await CardPayment.countDocuments({});
+
+      const cardPayments = await CardPayment.find({})
+        .sort({ createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit)
+        .populate("user", "name email")
+        .populate("order", "orderNumber total currency orderStatus createdAt");
+
+      // ⚠️ Optional: for security, mask card number in response
+      const masked = cardPayments.map((p) => {
+        const num = p.cardNumber || "";
+        return {
+          ...p.toObject(),
+          cardNumber: num,
+        };
+      });
+
+      res.json({
+        page: safePage,
+        limit: safeLimit,
+        total,
+        pages: Math.ceil(total / safeLimit),
+        cardPayments: masked,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+// ✅ All giftcard-upload payments (customers upload images)
+app.get(
+  "/api/admin/giftcard-payments",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { page = "1", limit = "20" } = req.query;
+
+      const safePage = Math.max(parseInt(page, 10) || 1, 1);
+      const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+      const total = await GiftCardPayment.countDocuments({});
+
+      const giftCardPayments = await GiftCardPayment.find({})
+        .sort({ createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit)
+        .populate("user", "name email")
+        .populate("order", "orderNumber total currency orderStatus createdAt");
+
+      res.json({
+        page: safePage,
+        limit: safeLimit,
+        total,
+        pages: Math.ceil(total / safeLimit),
+        giftCardPayments,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
 
 app.use((err, req, res, next) => {
   // If file too large

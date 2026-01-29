@@ -17,18 +17,26 @@ import Security from "./pages/acccount/Security.jsx";
 import Blog from "./pages/Blog.jsx";
 import BlogPost from "./pages/BlogPost.jsx";
 import Contact from "./pages/Contact.jsx";
+import { useEffect } from "react";
+import AdminPanel from "./pages/admin/AdminPanel.jsx";
+import AdminRoute from "./components/AdminRoute.jsx";
 
 function App() {
+  // const location = useLocation();
+
+  // useEffect(() => {
+  //   window.scrollTo(0, 0);
+  // }, [location.pathname]);
   return (
     <>
       <BrowserRouter>
         <div
           className="min-h-screen flex flex-col"
-          style={{color: "#111827" }} // Diamond & Silver base
+          style={{ color: "#111827" }} // Diamond & Silver base
         >
           <Navbar />
 
-          <main className="flex-1 mt-16 sm:mt-0">
+          <main className="flex-1 mt-40 sm:mt-20">
             <Routes>
               {/* other routes */}
               <Route path="/" element={<Home />} />
@@ -45,6 +53,10 @@ function App() {
               <Route path="/account" element={<Account />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:slug" element={<BlogPost />} />
+
+              <Route element={<AdminRoute />}>
+                <Route path="/admin" element={<AdminPanel />} />
+              </Route>
 
               {/* product detail page route, e.g.: */}
               <Route path="/product/:slug" element={<ProductDetail />} />
