@@ -2629,6 +2629,100 @@ app.get(
   },
 );
 
+// ===============================
+// ADMIN: CREATE PRODUCT
+// ===============================
+app.post(
+  "/api/admin/products",
+  authMiddleware,
+  adminMiddleware,
+  upload.array("images", 6), // max 6 images
+  async (req, res) => {
+    try {
+      const {
+        name,
+        description,
+        category,
+        subcategory,
+        metalType,
+        karat,
+        metalColor,
+        stoneType,
+        stoneColor,
+        gender,
+        price,
+        stock,
+        isFeatured,
+      } = req.body;
+
+      if (!name || !price || !category) {
+        return res.status(400).json({
+          error: "Name, price and category are required",
+        });
+      }
+
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({
+          error: "At least one product image is required",
+        });
+      }
+
+      // 🔥 Upload images to Cloudinary
+      const images = [];
+
+      for (let i = 0; i < req.files.length; i++) {
+        const file = req.files[i];
+
+        const result = await new Promise((resolve, reject) => {
+          const stream = cloudinary.v2.uploader.upload_stream(
+            {
+              folder: "veritygem/products",
+            },
+            (err, result) => {
+              if (err) return reject(err);
+              resolve(result);
+            },
+          );
+          stream.end(file.buffer);
+        });
+
+        images.push({
+          url: result.secure_url,
+          alt: name,
+          isPrimary: i === 0,
+        });
+      }
+
+      const product = new JewelryItem({
+        name,
+        description,
+        category,
+        subcategory,
+        metalType,
+        karat,
+        metalColor,
+        stoneType,
+        stoneColor,
+        gender,
+        price,
+        stock,
+        isFeatured: isFeatured === "true",
+        images,
+      });
+
+      await product.save();
+
+      res.status(201).json({
+        message: "Product created successfully",
+        product,
+      });
+    } catch (error) {
+      console.error("Create product error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
 app.use((err, req, res, next) => {
   // If file too large
   if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {

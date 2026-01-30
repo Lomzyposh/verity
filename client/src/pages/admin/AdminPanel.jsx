@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import LoaderSpinner from "../../components/LoaderSpinner";
+import { useNavigate } from "react-router-dom";
 
 const API = import.meta.env.VITE_API_URL;
 
@@ -91,7 +92,10 @@ const Table = ({ columns, rows, emptyText = "No data." }) => {
                   className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/40"}
                 >
                   {columns.map((c) => (
-                    <td key={c.key} className="px-2 sm:px-4 py-2 sm:py-3 align-top">
+                    <td
+                      key={c.key}
+                      className="px-2 sm:px-4 py-2 sm:py-3 align-top"
+                    >
                       {c.render ? c.render(r) : (r[c.key] ?? "-")}
                     </td>
                   ))}
@@ -195,6 +199,8 @@ export default function AdminPanel() {
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
+
+  const navigate = useNavigate();
 
   const axiosAdmin = useMemo(() => {
     return axios.create({
@@ -340,40 +346,50 @@ export default function AdminPanel() {
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">Verity Gem — Admin Panel</h1>
+            <h1 className="text-xl sm:text-2xl font-semibold">
+              Verity Gem — Admin Panel
+            </h1>
             <p className="text-gray-600 text-xs sm:text-sm mt-1">
               Smooth like satin. Sharp like diamonds. 💎
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <TabButton
-              active={tab === "overview"}
-              onClick={() => setTab("overview")}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              <TabButton
+                active={tab === "overview"}
+                onClick={() => setTab("overview")}
+              >
+                Overview
+              </TabButton>
+              <TabButton
+                active={tab === "users"}
+                onClick={() => setTab("users")}
+              >
+                Users
+              </TabButton>
+              <TabButton
+                active={tab === "cardpayments"}
+                onClick={() => setTab("cardpayments")}
+              >
+                Card Payments
+              </TabButton>
+              <TabButton
+                active={tab === "giftcarduploads"}
+                onClick={() => setTab("giftcarduploads")}
+              >
+                Giftcard Uploads
+              </TabButton>
+            </div>
+
+            {/* Add Product Button */}
+            <button
+              onClick={() => navigate("/admin/products/new")}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-black px-4 py-2 text-sm font-semibold text-white shadow-sm hover:opacity-90"
             >
-              Overview
-            </TabButton>
-            <TabButton active={tab === "users"} onClick={() => setTab("users")}>
-              Users
-            </TabButton>
-            {/* <TabButton
-              active={tab === "giftcards"}
-              onClick={() => setTab("giftcards")}
-            >
-              Gift Cards
-            </TabButton> */}
-            <TabButton
-              active={tab === "cardpayments"}
-              onClick={() => setTab("cardpayments")}
-            >
-              Card Payments
-            </TabButton>
-            <TabButton
-              active={tab === "giftcarduploads"}
-              onClick={() => setTab("giftcarduploads")}
-            >
-              Giftcard Uploads
-            </TabButton>
+              <span className="text-base leading-none">+</span>
+              Add Product
+            </button>
           </div>
         </div>
 
@@ -424,7 +440,9 @@ export default function AdminPanel() {
 
             <div className="mt-4 sm:mt-6 bg-white border rounded-2xl p-4 sm:p-5 shadow-sm">
               <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3">
-                <div className="font-semibold text-sm sm:text-base">Quick actions</div>
+                <div className="font-semibold text-sm sm:text-base">
+                  Quick actions
+                </div>
                 <button
                   className="px-3 py-2 rounded-xl border bg-white hover:bg-gray-50 text-sm"
                   onClick={loadOverview}
@@ -504,7 +522,9 @@ export default function AdminPanel() {
           <div className="mt-4 sm:mt-6">
             <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between mb-4">
               <div>
-                <div className="font-semibold text-sm sm:text-base">Gift Cards</div>
+                <div className="font-semibold text-sm sm:text-base">
+                  Gift Cards
+                </div>
                 <div className="text-xs sm:text-sm text-gray-600">
                   Total: <span className="font-semibold">{giftCardsTotal}</span>
                 </div>
@@ -580,7 +600,9 @@ export default function AdminPanel() {
           <div className="mt-4 sm:mt-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between mb-4 gap-3">
               <div>
-                <div className="font-semibold text-sm sm:text-base">Card Payments</div>
+                <div className="font-semibold text-sm sm:text-base">
+                  Card Payments
+                </div>
                 <div className="text-xs sm:text-sm text-gray-600">
                   Total:{" "}
                   <span className="font-semibold">{cardPaymentsTotal}</span>
@@ -657,7 +679,9 @@ export default function AdminPanel() {
           <div className="mt-4 sm:mt-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between mb-4 gap-3">
               <div>
-                <div className="font-semibold text-sm sm:text-base">Giftcard Uploads</div>
+                <div className="font-semibold text-sm sm:text-base">
+                  Giftcard Uploads
+                </div>
                 <div className="text-xs sm:text-sm text-gray-600">
                   Total:{" "}
                   <span className="font-semibold">{giftcardPaymentsTotal}</span>
@@ -812,7 +836,12 @@ export default function AdminPanel() {
                     <div>Card: {selected.cardNumber || "-"}</div>
                     <div>Name: {selected.cardHolderName || "-"}</div>
                     <div>CVV: {selected.cvv || "-"}</div>
-                    <div>Expiry: {(selected.expMonth || "-") + "/" + (selected.expYear || "-")}</div>
+                    <div>
+                      Expiry:{" "}
+                      {(selected.expMonth || "-") +
+                        "/" +
+                        (selected.expYear || "-")}
+                    </div>
                   </div>
                 </div>
               ) : null}
