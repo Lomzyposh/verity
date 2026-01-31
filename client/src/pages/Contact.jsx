@@ -16,9 +16,9 @@ export default function Contact() {
   // ✅ Edit these to yours
   const BRAND = "VerityGem";
   const EMAIL = "veritygem47@gmail.com";
-  const PHONE = "+19297829204";
-  const WHATSAPP = "+19297829204";
-  const ADDRESS_LINE = "United States, Los Angeles, CA";
+  const PHONE = "";
+  const WHATSAPP = "";
+  const ADDRESS_LINE = "📍 1600 West Slauson Ave Booth B2 Los Angeles, CA 90047";
   const HOURS = "Mon–Sat · 9:00am – 6:00pm (WAT)";
 
   const socials = [

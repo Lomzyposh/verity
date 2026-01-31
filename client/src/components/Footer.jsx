@@ -3,10 +3,8 @@ import { Link } from "react-router-dom";
 export default function Footer() {
   return (
     <footer
-      className=" pt-12 border-t bg-[#e7e7fa]"
-      style={{
-        borderColor: "#E5E7EB",
-      }}
+      className="pt-12 border-t bg-[#e7e7fa]"
+      style={{ borderColor: "#E5E7EB" }}
     >
       <div className="max-w-7xl mx-auto px-4 grid md:grid-cols-4 gap-12">
         {/* BRAND */}
@@ -17,15 +15,22 @@ export default function Footer() {
               alt="Verity Gem"
               className="h-8 w-auto"
             />
-            <h2
-              className="text-xl font-semibold "
-              style={{ color: "#111827" }}
-            >
+            <h2 className="text-xl font-semibold" style={{ color: "#111827" }}>
               Verity<span style={{ color: "#2563EB" }}>Gem</span>
             </h2>
           </div>
-          <p style={{ color: "#6B7280" }}>
+
+          <p className="mb-4" style={{ color: "#6B7280" }}>
             Timeless jewelry crafted with elegance, precision and heart.
+          </p>
+
+          {/* ADDRESS */}
+          <p className="text-sm leading-relaxed" style={{ color: "#6B7280" }}>
+            📍 1600 West Slauson Ave
+            <br />
+            Booth B2
+            <br />
+            Los Angeles, CA 90047
           </p>
         </div>
 
