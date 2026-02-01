@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../api/axios";
+import LoaderSpinner from "../components/LoaderSpinner";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -138,7 +139,7 @@ export default function Checkout() {
         className="min-h-screen flex items-center justify-center"
         style={{ background: "#F5F5F7" }}
       >
-        <p style={{ color: "#6B7280" }}>Loading your bag…</p>
+        <LoaderSpinner label="Loading your cart..." />
       </main>
     );
   }

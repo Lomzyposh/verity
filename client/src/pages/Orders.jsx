@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Info,
 } from "lucide-react";
+import LoaderSpinner from "../components/LoaderSpinner";
 
 export default function Orders() {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ export default function Orders() {
         className="min-h-screen flex items-center justify-center"
         style={{ background: "#F5F5F7" }}
       >
-        <p style={{ color: "#6B7280" }}>Loading your orders…</p>
+        <LoaderSpinner label="Loading your orders..." />
       </main>
     );
   }

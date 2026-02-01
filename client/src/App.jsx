@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import Login from "./pages/auth/Login.jsx";
@@ -23,51 +23,49 @@ import AdminRoute from "./components/AdminRoute.jsx";
 import AddProduct from "./pages/admin/AddProduct.jsx";
 
 function App() {
-  // const location = useLocation();
+  const location = useLocation();
 
-  // useEffect(() => {
-  //   window.scrollTo(0, 0);
-  // }, [location.pathname]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
   return (
     <>
-      <BrowserRouter>
-        <div
-          className="min-h-screen flex flex-col"
-          style={{ color: "#111827" }} // Diamond & Silver base
-        >
-          <Navbar />
+      <div
+        className="min-h-screen flex flex-col"
+        style={{ color: "#111827" }} // Diamond & Silver base
+      >
+        <Navbar />
 
-          <main className="flex-1 mt-40 sm:mt-20">
-            <Routes>
-              {/* other routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/orders" element={<Orders />} />
-              <Route path="/payment/:orderId" element={<Payment />} />
-              <Route path="/account/security" element={<Security />} />
-              <Route path="/account" element={<Account />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="/blog/:slug" element={<BlogPost />} />
+        <main className="flex-1 mt-40 sm:mt-20">
+          <Routes>
+            {/* other routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/shop" element={<Shop />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/payment/:orderId" element={<Payment />} />
+            <Route path="/account/security" element={<Security />} />
+            <Route path="/account" element={<Account />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
 
-              <Route element={<AdminRoute />}>
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/admin/products/new" element={<AddProduct />} />
-              </Route>
+            <Route element={<AdminRoute />}>
+              <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/admin/products/new" element={<AddProduct />} />
+            </Route>
 
-              {/* product detail page route, e.g.: */}
-              <Route path="/product/:slug" element={<ProductDetail />} />
-            </Routes>
-          </main>
+            {/* product detail page route, e.g.: */}
+            <Route path="/product/:slug" element={<ProductDetail />} />
+          </Routes>
+        </main>
 
-          <Footer />
-        </div>
-      </BrowserRouter>
+        <Footer />
+      </div>
       <Toaster
         position="bottom-center"
         toastOptions={{

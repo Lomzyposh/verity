@@ -8,19 +8,22 @@ import { CurrencyProvider } from "./contexts/CurrencyContext.jsx";
 import { CartProvider } from "./contexts/CartContext.jsx";
 import { FavoritesProvider } from "./contexts/FavoriteContext.jsx";
 import { JewelryProvider } from "./contexts/JewelryContext.jsx";
+import { BrowserRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <AuthProvider>
-      <CurrencyProvider>
-        <CartProvider>
-          <FavoritesProvider>
-            <JewelryProvider>
-              <App />
-            </JewelryProvider>
-          </FavoritesProvider>
-        </CartProvider>
-      </CurrencyProvider>
-    </AuthProvider>
-  </StrictMode>
+  <BrowserRouter>
+    <StrictMode>
+      <AuthProvider>
+        <CurrencyProvider>
+          <CartProvider>
+            <FavoritesProvider>
+              <JewelryProvider>
+                <App />
+              </JewelryProvider>
+            </FavoritesProvider>
+          </CartProvider>
+        </CurrencyProvider>
+      </AuthProvider>
+    </StrictMode>
+  </BrowserRouter>,
 );

@@ -118,7 +118,7 @@ export default function CraftingSection() {
 
           <div className="mt-6">
             <Link
-              to="/about"
+              to="/blog"
               className="inline-flex items-center text-sm font-medium"
               style={{ color: "#60A5FA" }}
             >

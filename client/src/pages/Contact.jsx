@@ -8,6 +8,7 @@ import {
   Instagram,
   Facebook,
   Twitter,
+  Music2,
   ShieldCheck,
   ChevronLeft,
 } from "lucide-react";
@@ -18,13 +19,26 @@ export default function Contact() {
   const EMAIL = "veritygem47@gmail.com";
   const PHONE = "";
   const WHATSAPP = "";
-  const ADDRESS_LINE = "📍 1600 West Slauson Ave Booth B2 Los Angeles, CA 90047";
+  const ADDRESS_LINE =
+    "📍 1600 West Slauson Ave Booth B2 Los Angeles, CA 90047";
   const HOURS = "Mon–Sat · 9:00am – 6:00pm (WAT)";
 
   const socials = [
-    { name: "Instagram", icon: Instagram, href: "https://instagram.com" },
-    { name: "Facebook", icon: Facebook, href: "https://facebook.com" },
-    { name: "X (Twitter)", icon: Twitter, href: "https://x.com" },
+    {
+      name: "Instagram",
+      icon: Instagram,
+      href: "https://instagram.com/veritygemjewelry",
+    },
+    {
+      name: "Facebook",
+      icon: Facebook,
+      href: "https://web.facebook.com/profile.php?id=61585657743953",
+    },
+    {
+      name: "TikTok",
+      icon: Music2,
+      href: "https://tiktok.com/@veritygem",
+    },
   ];
 
   return (
@@ -85,10 +99,10 @@ export default function Contact() {
                   subtitle="Best for receipts, invoices & detailed support"
                   value={EMAIL}
                   href={`mailto:${EMAIL}?subject=${encodeURIComponent(
-                    `${BRAND} Support`
+                    `${BRAND} Support`,
                   )}`}
                 />
-                <ContactCard
+                {/* <ContactCard
                   icon={Phone}
                   title="Phone"
                   subtitle="For urgent order updates"
@@ -103,7 +117,7 @@ export default function Contact() {
                   href={`https://wa.me/${WHATSAPP}?text=${encodeURIComponent(
                     `Hi ${BRAND} Support, I need help with my order.`
                   )}`}
-                />
+                /> */}
                 <ContactCard
                   icon={MapPin}
                   title="Location"
@@ -249,7 +263,7 @@ export default function Contact() {
 
               <a
                 href={`mailto:${EMAIL}?subject=${encodeURIComponent(
-                  `${BRAND} Partnerships`
+                  `${BRAND} Partnerships`,
                 )}`}
                 className="mt-4 inline-flex items-center justify-center h-11 w-full rounded-xl text-sm font-semibold"
                 style={{ background: "#111827", color: "#FFFFFF" }}

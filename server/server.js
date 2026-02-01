@@ -147,48 +147,77 @@ const discountSchema = new mongoose.Schema(
   { _id: false },
 );
 
+// assumes you already have these schemas defined somewhere above:
+// const discountSchema = new mongoose.Schema(...)
+// const imageSchema = new mongoose.Schema(...)
+
+function randomRating() {
+  // realistic store range (avoid 0 and avoid perfect 5.0)
+  const min = 4.1;
+  const max = 4.9;
+  return Math.round((min + Math.random() * (max - min)) * 10) / 10; // 1dp
+}
+
+function generateSku(category = "ITEM") {
+  const prefix = String(category || "ITEM")
+    .toUpperCase()
+    .replace(/\s+/g, "-")
+    .slice(0, 8);
+
+  const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
+  const time = Date.now().toString().slice(-5);
+  return `${prefix}-${time}-${rand}`;
+}
+
 const jewelryItemSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
+
     slug: { type: String, unique: true, index: true, trim: true },
+
     sku: { type: String, unique: true, sparse: true, trim: true },
-    description: { type: String, trim: true },
+
+    description: { type: String, trim: true, default: "" },
+
     category: {
       type: String,
-      enum: [
-        "ring",
-        "necklace",
-        "earring",
-        "bracelet",
-        "anklet",
-        "watch",
-        "pendant",
-        "set",
-        "other",
-      ],
       index: true,
+      required: true,
     },
-    subcategory: { type: String, trim: true, index: true },
+
+    subcategory: { type: String, trim: true, index: true, default: "" },
+
     metalType: {
       type: String,
-      enum: ["gold", "silver", "platinum", "stainless steel", "other"],
       index: true,
+      default: "other",
     },
-    karat: { type: Number, min: 1, max: 24, index: true },
-    metalColor: { type: String, trim: true, index: true },
-    stoneType: { type: String, trim: true, index: true },
-    stoneColor: { type: String, trim: true },
+
+    karat: { type: Number, min: 1, max: 24, index: true, default: null },
+
+    metalColor: { type: String, trim: true, index: true, default: "" },
+
+    stoneType: { type: String, trim: true, index: true, default: "" },
+
+    stoneColor: { type: String, trim: true, default: "" },
+
     gender: {
       type: String,
       enum: ["mens", "womens", "unisex"],
       default: "unisex",
       index: true,
     },
-    occasions: [{ type: String, trim: true }],
-    styleTags: [{ type: String, trim: true }],
+
+    occasions: { type: [{ type: String, trim: true }], default: [] },
+
+    styleTags: { type: [{ type: String, trim: true }], default: [] },
+
     price: { type: Number, required: true, min: 0 },
+
     currency: { type: String, default: "USD" },
+
     discount: discountSchema,
+
     images: {
       type: [imageSchema],
       validate: {
@@ -196,11 +225,18 @@ const jewelryItemSchema = new mongoose.Schema(
         message: "At least one product image is required",
       },
     },
+
+    // ✅ default used only if rating isn't provided
     rating: { type: Number, default: 0, min: 0, max: 5 },
+
     reviewCount: { type: Number, default: 0, min: 0 },
+
     stock: { type: Number, default: 0, min: 0 },
+
     isActive: { type: Boolean, default: true, index: true },
+
     isFeatured: { type: Boolean, default: false, index: true },
+
     engraving: {
       available: { type: Boolean, default: false },
       maxLength: { type: Number, default: 20 },
@@ -241,12 +277,53 @@ jewelryItemSchema.index({
   styleTags: "text",
 });
 
-jewelryItemSchema.pre("save", function (next) {
-  if (this.isModified("name") && !this.slug) {
-    this.slug = slugify(this.name, { lower: true, strict: true });
+/**
+ * ✅ Auto-fill fields before validation
+ * - slug (always if missing)
+ * - sku (always if missing)
+ * - rating (if missing OR 0)
+ */
+jewelryItemSchema.pre("validate", async function (next) {
+  try {
+    // SLUG
+    if (!this.slug && this.name) {
+      this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+
+    // SKU (unique)
+    if (!this.sku) {
+      let sku = generateSku(this.category);
+      // prevent collisions
+      // eslint-disable-next-line no-await-in-loop
+      while (await mongoose.models.JewelryItem.exists({ sku })) {
+        sku = generateSku(this.category);
+      }
+      this.sku = sku;
+    }
+
+    // RATING (only if missing or 0)
+    if (!this.rating || Number(this.rating) === 0) {
+      this.rating = randomRating();
+    }
+
+    // Make sure arrays are not undefined
+    if (!Array.isArray(this.occasions)) this.occasions = [];
+    if (!Array.isArray(this.styleTags)) this.styleTags = [];
+
+    next();
+  } catch (err) {
+    next(err);
   }
-  next();
 });
+
+// Keep your old hook if you want, but it's no longer necessary.
+// Leaving it won't hurt, but slug generation is now handled in pre("validate").
+// jewelryItemSchema.pre("save", function (next) {
+//   if (this.isModified("name") && !this.slug) {
+//     this.slug = slugify(this.name, { lower: true, strict: true });
+//   }
+//   next();
+// });
 
 const JewelryItem = mongoose.model("JewelryItem", jewelryItemSchema);
 
@@ -2636,7 +2713,7 @@ app.post(
   "/api/admin/products",
   authMiddleware,
   adminMiddleware,
-  upload.array("images", 6), // max 6 images
+  upload.array("images", 8), // max 6 images
   async (req, res) => {
     try {
       const {
@@ -2693,19 +2770,21 @@ app.post(
         });
       }
 
+      const clean = (v) => (typeof v === "string" ? v.trim() : v);
+
       const product = new JewelryItem({
-        name,
-        description,
-        category,
-        subcategory,
-        metalType,
-        karat,
-        metalColor,
-        stoneType,
-        stoneColor,
-        gender,
-        price,
-        stock,
+        name: clean(name),
+        description: clean(description),
+        category: clean(category),
+        subcategory: clean(subcategory),
+        metalType: clean(metalType),
+        karat: karat ? Number(karat) : undefined,
+        metalColor: clean(metalColor),
+        stoneType: clean(stoneType),
+        stoneColor: clean(stoneColor),
+        gender: clean(gender),
+        price: Number(price),
+        stock: stock ? Number(stock) : undefined,
         isFeatured: isFeatured === "true",
         images,
       });

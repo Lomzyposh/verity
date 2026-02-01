@@ -40,10 +40,11 @@ export default function Footer() {
             Shop
           </h3>
           <ul className="space-y-2">
-            <FooterLink to="/shop/rings" label="Rings" />
-            <FooterLink to="/shop/necklaces" label="Necklaces" />
-            <FooterLink to="/shop/bracelets" label="Bracelets" />
-            <FooterLink to="/shop/earrings" label="Earrings" />
+            <FooterLink to="/shop?category=watch" label="Watches" />
+            <FooterLink to="/shop?category=ring" label="Rings" />
+            <FooterLink to="/shop?category=necklace" label="Necklaces" />
+            <FooterLink to="/shop?category=bracelet" label="Bracelets" />
+            <FooterLink to="/shop?category=earring" label="Earrings" />
           </ul>
         </div>
 
@@ -53,10 +54,10 @@ export default function Footer() {
             Support
           </h3>
           <ul className="space-y-2">
-            <FooterLink to="/contact" label="Contact" />
-            <FooterLink to="/shipping-info" label="Shipping & Returns" />
-            <FooterLink to="/size-guide" label="Size Guide" />
-            <FooterLink to="/faq" label="FAQ" />
+            <FooterLink to="/" label="Contact" />
+            <FooterLink to="/" label="Shipping & Returns" />
+            <FooterLink to="/" label="Size Guide" />
+            <FooterLink to="/" label="FAQ" />
           </ul>
         </div>
 
@@ -66,10 +67,15 @@ export default function Footer() {
             Connect
           </h3>
           <ul className="space-y-2">
-            <FooterLink to="#" label="Instagram" />
-            <FooterLink to="#" label="TikTok" />
-            <FooterLink to="#" label="Twitter" />
-            <FooterLink to="#" label="WhatsApp" />
+            <FooterLink
+              to="https://instagram.com/veritygemjewelry"
+              label="Instagram"
+            />
+            <FooterLink to="https://tiktok.com/@veritygem" label="TikTok" />
+            <FooterLink
+              to="https://web.facebook.com/profile.php?id=61585657743953"
+              label="Facebook"
+            />
           </ul>
         </div>
       </div>

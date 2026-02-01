@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../contexts/CartContext";
 import { useState, useMemo, useEffect } from "react";
 import { Trash2, ChevronLeft, ShieldCheck, Truck } from "lucide-react";
+import LoaderSpinner from "../components/LoaderSpinner";
 
 export default function Cart() {
   const navigate = useNavigate();
@@ -122,9 +123,7 @@ export default function Cart() {
         {showLoading ? (
           // 🔄 Loading view (only shows while actually loading or first mount)
           <section className="flex flex-col items-center justify-center py-16">
-            <p className="text-sm mb-3" style={{ color: "#6B7280" }}>
-              Loading your cart...
-            </p>
+          <LoaderSpinner label="Loading your cart..." />
           </section>
         ) : showEmptyState ? (
           // 🧺 Truly empty cart (after loading finished)

@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useJewelry } from "../contexts/JewelryContext";
+import LoaderSpinner from "../components/LoaderSpinner";
 
 const CATEGORY_TILES = [
   {
@@ -328,7 +329,7 @@ export default function Shop() {
         {/* PRODUCTS GRID */}
         <section ref={productsRef}>
           {loadingJewelry ? (
-            <p style={{ color: "#6B7280" }}>Loading jewelry…</p>
+            <LoaderSpinner label="Loading Jewelries💎"  />
           ) : jewelryError ? (
             <p style={{ color: "#B91C1C" }}>{jewelryError}</p>
           ) : filteredAndSorted.length === 0 ? (

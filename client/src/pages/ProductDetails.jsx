@@ -16,7 +16,7 @@ export default function ProductDetail() {
 
   const product = useMemo(
     () => jewelry.find((item) => item.slug === slug),
-    [jewelry, slug]
+    [jewelry, slug],
   );
 
   useEffect(() => {
@@ -89,7 +89,7 @@ export default function ProductDetail() {
   if (hasDiscount) {
     if (product.discount.type === "percentage") {
       discountedPrice = Math.round(
-        basePrice * (1 - product.discount.value / 100)
+        basePrice * (1 - product.discount.value / 100),
       );
     } else if (product.discount.type === "fixed") {
       discountedPrice = Math.max(0, basePrice - product.discount.value);
@@ -213,7 +213,9 @@ export default function ProductDetail() {
                 <span className="inline-flex items-center gap-1">
                   <Star size={14} style={{ color: "#F59E0B" }} />
                   <span style={{ color: "#111827" }}>
-                    {product.rating.toFixed(1)}
+                    {product.rating && product.rating > 0
+                      ? product.rating
+                      : "New"}
                   </span>
                 </span>
               )}
@@ -349,7 +351,7 @@ export default function ProductDetail() {
                         if (cartEntry.quantity > 1) {
                           await updateCartItem(
                             cartEntry._id,
-                            cartEntry.quantity - 1
+                            cartEntry.quantity - 1,
                           );
                         } else {
                           await removeFromCart(cartEntry._id);
