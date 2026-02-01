@@ -11,6 +11,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import api from "../api/axios";
 import LoaderSpinner from "../components/LoaderSpinner";
+import toast from "react-hot-toast";
 
 export default function Checkout() {
   const navigate = useNavigate();
@@ -112,15 +113,24 @@ export default function Checkout() {
       const response = await api.post("/api/orders", payload);
       await fetchCartFromServer();
       console.log("Order response:", response.data);
-      toast.success("Processing your payment… Check your spam folder if you don't see an email shortly.");
-
-      navigate(`/orders`);
+      toast.success(
+        "Processing your payment… Check your spam folder if you don't see an email shortly.",
+      );
+      const redirect = response.data?.redirect;
+      if (redirect) {
+        const url = new URL(redirect);
+        console.log("Redirecting to payment URL:", url.pathname);
+        navigate(url.pathname);
+      } else {
+        console.log("No redirect URL, navigating to order payment page");
+        navigate(`/payment/${response.data.order?._id}`);
+      }
     } catch (err) {
       console.error("Checkout error:", err.response?.data || err);
       setError(
         err?.response?.data?.error ||
           err?.response?.data?.message ||
-          "We couldn’t place your order right now. Please try again."
+          "We couldn’t place your order right now. Please try again.",
       );
     } finally {
       setSubmitting(false);
@@ -716,7 +726,7 @@ export default function Checkout() {
                             Qty {qty} ·{" "}
                             {formatPrice(
                               lineTotal,
-                              product.currency || currency
+                              product.currency || currency,
                             )}
                           </p>
                           {entry.customization?.engraving && (

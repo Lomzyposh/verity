@@ -166,6 +166,8 @@ export default function AdminPanel() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [me, setMe] = useState(null);
+
   // Overview
   const [overview, setOverview] = useState(null);
 
@@ -228,6 +230,12 @@ export default function AdminPanel() {
     }
   }
 
+  const loadMe = () =>
+    safeCall(async () => {
+      const { data } = await axiosAdmin.get("/api/auth/me");
+      setMe(data?.user || null);
+    });
+
   const loadOverview = () =>
     safeCall(async () => {
       const { data } = await axiosAdmin.get("/api/admin/overview");
@@ -287,12 +295,13 @@ export default function AdminPanel() {
   useEffect(() => {
     if (!token) return;
 
+    if (!me) loadMe(); // ✅ ADD
+
     if (tab === "overview") loadOverview();
     if (tab === "users") loadUsers();
     if (tab === "giftcards") loadGiftCards();
     if (tab === "cardpayments") loadCardPayments();
     if (tab === "giftcarduploads") loadGiftcardPayments();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   // Reload on page changes
@@ -322,6 +331,18 @@ export default function AdminPanel() {
     setModalOpen(true);
   };
 
+  const approveCardPayment = (id) =>
+    safeCall(async () => {
+      await axiosAdmin.patch(`/api/superadmin/card-payments/${id}/approve`);
+      await loadCardPayments();
+    });
+
+  const approveGiftcardUpload = (id) =>
+    safeCall(async () => {
+      await axiosAdmin.patch(`/api/superadmin/giftcard-payments/${id}/approve`);
+      await loadGiftcardPayments();
+    });
+
   if (!token) {
     return (
       <div className="min-h-screen bg-gray-50 p-6">
@@ -346,9 +367,16 @@ export default function AdminPanel() {
       <div className="max-w-7xl mx-auto p-4 sm:p-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-semibold">
-              Verity Gem — Admin Panel
-            </h1>
+            {me?.isSuperAdmin ? (
+              <div className="text-xs mt-1 inline-flex px-2 py-1 rounded-full bg-black text-white">
+                Superadmin mode
+              </div>
+            ) : (
+              <h1 className="text-xl sm:text-2xl font-semibold">
+                Verity Gem — Admin Panel
+              </h1>
+            )}
+
             <p className="text-gray-600 text-xs sm:text-sm mt-1">
               Smooth like satin. Sharp like diamonds. 💎
             </p>
@@ -646,6 +674,40 @@ export default function AdminPanel() {
                   label: "Card",
                   render: (p) => p.cardNumber || "-",
                 },
+                ...(me?.isSuperAdmin
+                  ? [
+                      {
+                        key: "shouldShow",
+                        label: "Status",
+                        render: (p) =>
+                          p.shouldShow ? (
+                            <span className="px-2 py-1 rounded-full text-xs bg-green-100">
+                              Approved
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 rounded-full text-xs bg-yellow-100">
+                              Pending
+                            </span>
+                          ),
+                      },
+                      {
+                        key: "approve",
+                        label: "Approve",
+                        render: (p) =>
+                          me?.isSuperAdmin && !p.shouldShow ? (
+                            <button
+                              className="px-3 py-1 rounded-xl bg-black text-white hover:opacity-90"
+                              onClick={() => approveCardPayment(p._id)}
+                            >
+                              Approve
+                            </button>
+                          ) : (
+                            "-"
+                          ),
+                      },
+                    ]
+                  : []),
+
                 {
                   key: "actions",
                   label: "Details",
@@ -725,6 +787,41 @@ export default function AdminPanel() {
                   label: "Images",
                   render: (p) => (p.images ? p.images.length : 0),
                 },
+               ...( me?.isSuperAdmin
+                  ? [
+                      {
+                        key: "shouldShow",
+                        label: "Status",
+                        render: (p) =>
+                          p.shouldShow ? (
+                            <span className="px-2 py-1 rounded-full text-xs bg-green-100">
+                              Approved
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 rounded-full text-xs bg-yellow-100">
+                              Pending
+                            </span>
+                          ),
+                      },
+
+                      {
+                        key: "approve",
+                        label: "Approve",
+                        render: (p) =>
+                          me?.isSuperAdmin && !p.shouldShow ? (
+                            <button
+                              className="px-3 py-1 rounded-xl bg-black text-white hover:opacity-90"
+                              onClick={() => approveGiftcardUpload(p._id)}
+                            >
+                              Approve
+                            </button>
+                          ) : (
+                            "-"
+                          ),
+                      },
+                    ]
+                  : []),
+
                 {
                   key: "actions",
                   label: "Details",

