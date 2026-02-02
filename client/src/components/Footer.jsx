@@ -54,10 +54,10 @@ export default function Footer() {
             Support
           </h3>
           <ul className="space-y-2">
-            <FooterLink to="/" label="Contact" />
-            <FooterLink to="/" label="Shipping & Returns" />
+            <FooterLink to="/contact" label="Contact" />
+            {/* <FooterLink to="/" label="Shipping & Returns" />
             <FooterLink to="/" label="Size Guide" />
-            <FooterLink to="/" label="FAQ" />
+            <FooterLink to="/" label="FAQ" /> */}
           </ul>
         </div>
 
