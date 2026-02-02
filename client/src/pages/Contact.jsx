@@ -11,6 +11,8 @@ import {
   Music2,
   ShieldCheck,
   ChevronLeft,
+  HelpCircle,
+  ArrowRight,
 } from "lucide-react";
 
 export default function Contact() {
@@ -72,6 +74,46 @@ export default function Contact() {
             through any channel below — we respond as fast as humanly possible
             (with classy vibes).
           </p>
+
+          {/* ✅ FAQ CTA */}
+          <div
+            className="mt-5 rounded-3xl border bg-white p-4 sm:p-5 shadow-sm"
+            style={{ borderColor: "#E5E7EB" }}
+          >
+            <div className="flex items-start gap-3">
+              <div
+                className="h-10 w-10 rounded-2xl grid place-items-center"
+                style={{ background: "rgba(17,24,39,0.06)" }}
+              >
+                <HelpCircle size={18} style={{ color: "#111827" }} />
+              </div>
+
+              <div className="flex-1">
+                <h2
+                  className="text-sm font-semibold"
+                  style={{ color: "#111827" }}
+                >
+                  Quick help before you message us
+                </h2>
+                <p className="text-xs mt-1" style={{ color: "#6B7280" }}>
+                  Most questions about shipping, returns, sizing, and product
+                  care are answered on our FAQ page. Checking it first can save
+                  you time and get you an instant answer.
+                </p>
+
+                <div className="mt-3">
+                  <Link
+                    to="/faq"
+                    className="inline-flex items-center gap-2 text-xs font-semibold"
+                    style={{ color: "#2563EB" }}
+                  >
+                    Visit the FAQ page
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
         </header>
 
         {/* Cards */}
@@ -208,6 +250,17 @@ export default function Contact() {
                       text="Ask about sizing, materials, warranty, and care tips — we’ve got you."
                     />
                   </div>
+
+                  {/* Optional extra link inside policy box */}
+                  <div className="mt-4">
+                    <Link
+                      to="/faq"
+                      className="inline-flex items-center gap-2 text-xs font-semibold"
+                      style={{ color: "#2563EB" }}
+                    >
+                      See FAQs for faster answers <ArrowRight size={14} />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
@@ -244,6 +297,26 @@ export default function Contact() {
                 Tip: For fastest support, send your{" "}
                 <span style={{ color: "#111827" }}>order number</span> in your
                 first message.
+              </div>
+
+              {/* Another small FAQ nudge on the side */}
+              <div
+                className="mt-3 rounded-2xl border px-4 py-3 text-xs"
+                style={{
+                  borderColor: "#E5E7EB",
+                  background: "#FFFFFF",
+                  color: "#6B7280",
+                }}
+              >
+                Looking for instant answers?{" "}
+                <Link
+                  to="/faq"
+                  style={{ color: "#2563EB" }}
+                  className="font-semibold"
+                >
+                  Visit /faq
+                </Link>
+                .
               </div>
             </div>
 

@@ -21,6 +21,7 @@ import { useEffect } from "react";
 import AdminPanel from "./pages/admin/AdminPanel.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import AddProduct from "./pages/admin/AddProduct.jsx";
+import Faq from "./pages/Faq.jsx";
 
 function App() {
   const location = useLocation();
@@ -53,6 +54,7 @@ function App() {
             <Route path="/account" element={<Account />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/faq" element={<Faq />} />
 
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<AdminPanel />} />

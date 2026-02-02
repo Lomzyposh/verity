@@ -57,7 +57,8 @@ export default function Footer() {
             <FooterLink to="/contact" label="Contact" />
             {/* <FooterLink to="/" label="Shipping & Returns" />
             <FooterLink to="/" label="Size Guide" />
-            <FooterLink to="/" label="FAQ" /> */}
+             */}
+            <FooterLink to="/faq" label="FAQ" />
           </ul>
         </div>
 
