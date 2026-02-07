@@ -359,12 +359,24 @@ export default function Shop() {
                       className="w-full h-full object-cover"
                     />
 
-                    {/* ✅ Admin edit pen */}
+                    {/* ✅ Stock badge (top-left) */}
+                    <span
+                      onClick={(e) => e.stopPropagation()}
+                      className={`absolute top-3 left-3 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                        item.stock > 0
+                          ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                          : "bg-rose-100 text-rose-700 border-rose-200"
+                      }`}
+                    >
+                      {item.stock > 0 ? "In stock" : "Out of stock"}
+                    </span>
+
+                    {/* ✅ Admin edit pen (top-right) */}
                     {isAdmin ? (
                       <button
                         type="button"
                         onClick={(e) => {
-                          e.stopPropagation(); // ✅ prevents opening product details
+                          e.stopPropagation();
                           navigate(`/admin/products/${item._id}/edit`);
                         }}
                         className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-200 p-2 shadow-sm hover:bg-white"
@@ -386,9 +398,9 @@ export default function Shop() {
 
                     <p className="text-xs" style={{ color: "#6B7280" }}>
                       {item.metalType && item.metalColor
-                        ? `${item.karat || ""}k ${capitalize(
-                            item.metalColor,
-                          )} ${capitalize(item.metalType)}`
+                        ? `${item.karat || ""}k ${capitalize(item.metalColor)} ${capitalize(
+                            item.metalType,
+                          )}`
                         : item.category
                           ? capitalize(item.category)
                           : ""}
@@ -397,19 +409,19 @@ export default function Shop() {
                     {/* PRICE + DISCOUNT SECTION */}
                     {item.discount?.isActive ? (
                       <div className="flex items-center gap-2">
-                        {/* Discounted Price */}
                         <p
                           className="text-sm font-semibold"
                           style={{ color: "#111827" }}
                         >
                           {formatPrice(
-                            item.price -
-                              (item.price * item.discount.value) / 100,
+                            item.discount.type === "percentage"
+                              ? item.price -
+                                  (item.price * item.discount.value) / 100
+                              : item.price - item.discount.value,
                             item.currency,
                           )}
                         </p>
 
-                        {/* Old Price (Strikethrough) */}
                         <p
                           className="text-xs line-through"
                           style={{ color: "#9CA3AF" }}
@@ -417,13 +429,13 @@ export default function Shop() {
                           {formatPrice(item.price, item.currency)}
                         </p>
 
-                        {/* Discount Badge */}
                         <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-400 text-blue-900">
-                          -{item.discount.value}%
+                          {item.discount.type === "percentage"
+                            ? `-${item.discount.value}%`
+                            : `-${formatPrice(item.discount.value, item.currency)}`}
                         </span>
                       </div>
                     ) : (
-                      /* Normal Price */
                       <p
                         className="text-sm font-semibold"
                         style={{ color: "#111827" }}
