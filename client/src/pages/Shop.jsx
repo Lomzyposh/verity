@@ -2,6 +2,8 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useJewelry } from "../contexts/JewelryContext";
 import LoaderSpinner from "../components/LoaderSpinner";
+import { Pencil } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 const CATEGORY_TILES = [
   {
@@ -22,13 +24,16 @@ const CATEGORY_TILES = [
   {
     key: "watch",
     label: "Watches",
-    image: "https://tse4.mm.bing.net/th/id/OIP.kDiLzybU9KKKvtBj1IViWwHaHa?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3",
+    image:
+      "https://tse4.mm.bing.net/th/id/OIP.kDiLzybU9KKKvtBj1IViWwHaHa?cb=ucfimg2&ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3",
   },
 ];
 
 export default function Shop() {
   const navigate = useNavigate();
   const { jewelry, loadingJewelry, jewelryError } = useJewelry();
+  const { user } = useAuth();
+  const isAdmin = !!user?.isAdmin || !!user?.isSuperAdmin;
 
   const productsRef = useRef(null);
 
@@ -73,7 +78,7 @@ export default function Shop() {
 
     if (activeCategory !== "all") {
       items = items.filter(
-        (item) => item.category?.toLowerCase() === activeCategory.toLowerCase()
+        (item) => item.category?.toLowerCase() === activeCategory.toLowerCase(),
       );
     }
 
@@ -84,7 +89,7 @@ export default function Shop() {
     if (metalColorFilter !== "all") {
       items = items.filter(
         (item) =>
-          item.metalColor?.toLowerCase() === metalColorFilter.toLowerCase()
+          item.metalColor?.toLowerCase() === metalColorFilter.toLowerCase(),
       );
     }
 
@@ -106,20 +111,20 @@ export default function Shop() {
       case "price-asc":
         items.sort(
           (a, b) =>
-            (a.price ?? a.finalPrice ?? 0) - (b.price ?? b.finalPrice ?? 0)
+            (a.price ?? a.finalPrice ?? 0) - (b.price ?? b.finalPrice ?? 0),
         );
         break;
       case "price-desc":
         items.sort(
           (a, b) =>
-            (b.price ?? b.finalPrice ?? 0) - (a.price ?? a.finalPrice ?? 0)
+            (b.price ?? b.finalPrice ?? 0) - (a.price ?? a.finalPrice ?? 0),
         );
         break;
       case "newest":
         items.sort(
           (a, b) =>
             new Date(b.createdAt || 0).getTime() -
-            new Date(a.createdAt || 0).getTime()
+            new Date(a.createdAt || 0).getTime(),
         );
         break;
       case "rating":
@@ -329,7 +334,7 @@ export default function Shop() {
         {/* PRODUCTS GRID */}
         <section ref={productsRef}>
           {loadingJewelry ? (
-            <LoaderSpinner label="Loading Jewelries💎"  />
+            <LoaderSpinner label="Loading Jewelries💎" />
           ) : jewelryError ? (
             <p style={{ color: "#B91C1C" }}>{jewelryError}</p>
           ) : filteredAndSorted.length === 0 ? (
@@ -345,7 +350,7 @@ export default function Shop() {
                   onClick={() => handleCardClick(item.slug)}
                 >
                   <div
-                    className="w-full aspect-4/5 rounded-2xl overflow-hidden bg-white border mb-3"
+                    className="relative w-full aspect-4/5 rounded-2xl overflow-hidden bg-white border mb-3"
                     style={{ borderColor: "#E5E7EB" }}
                   >
                     <img
@@ -353,6 +358,22 @@ export default function Shop() {
                       alt={item.images?.[0]?.alt || item.name}
                       className="w-full h-full object-cover"
                     />
+
+                    {/* ✅ Admin edit pen */}
+                    {isAdmin ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation(); // ✅ prevents opening product details
+                          navigate(`/admin/products/${item._id}/edit`);
+                        }}
+                        className="absolute top-3 right-3 inline-flex items-center justify-center rounded-full bg-white/90 border border-slate-200 p-2 shadow-sm hover:bg-white"
+                        title="Edit product"
+                        aria-label="Edit product"
+                      >
+                        <Pencil className="w-4 h-4 text-slate-800" />
+                      </button>
+                    ) : null}
                   </div>
 
                   <div className="space-y-1">
@@ -366,11 +387,11 @@ export default function Shop() {
                     <p className="text-xs" style={{ color: "#6B7280" }}>
                       {item.metalType && item.metalColor
                         ? `${item.karat || ""}k ${capitalize(
-                            item.metalColor
+                            item.metalColor,
                           )} ${capitalize(item.metalType)}`
                         : item.category
-                        ? capitalize(item.category)
-                        : ""}
+                          ? capitalize(item.category)
+                          : ""}
                     </p>
 
                     {/* PRICE + DISCOUNT SECTION */}
@@ -384,7 +405,7 @@ export default function Shop() {
                           {formatPrice(
                             item.price -
                               (item.price * item.discount.value) / 100,
-                            item.currency
+                            item.currency,
                           )}
                         </p>
 
@@ -409,7 +430,7 @@ export default function Shop() {
                       >
                         {formatPrice(
                           item.price ?? item.finalPrice,
-                          item.currency
+                          item.currency,
                         )}
                       </p>
                     )}

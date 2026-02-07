@@ -22,6 +22,7 @@ import AdminPanel from "./pages/admin/AdminPanel.jsx";
 import AdminRoute from "./components/AdminRoute.jsx";
 import AddProduct from "./pages/admin/AddProduct.jsx";
 import Faq from "./pages/Faq.jsx";
+import EditProduct from "./pages/admin/EditProduct.jsx";
 
 function App() {
   const location = useLocation();
@@ -59,6 +60,7 @@ function App() {
             <Route element={<AdminRoute />}>
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="/admin/products/new" element={<AddProduct />} />
+              <Route path="/admin/products/:id/edit" element={<EditProduct />}/>
             </Route>
 
             {/* product detail page route, e.g.: */}

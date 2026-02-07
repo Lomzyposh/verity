@@ -48,7 +48,7 @@ export default function Navbar() {
         scrolled || !isHomepage ? "border-b" : ""
       }`}
       style={{
-        background: scrolled || !isHomepage ? "#FAFBFC" : "#00000080",
+        background: "#FFF",
         backdropFilter: "blur(6px)",
       }}
     >
@@ -57,9 +57,7 @@ export default function Navbar() {
         <div className="flex items-center">
           <Link
             to="/"
-            className={`flex text-2xl font-semibold tracking-tight ${
-              shouldDarkText ? "text-gray-900" : "text-white"
-            }`}
+            className={`flex text-2xl font-semibold tracking-tight text-gray-900`}
           >
             <img
               src="/images/logo.png"
@@ -143,7 +141,7 @@ export default function Navbar() {
           <Link
             to="/cart"
             className="p-2 rounded-full transition hover:bg-white/10 relative"
-            style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
+            style={{ color: "#111827" }}
             aria-label="Cart"
           >
             <ShoppingCart size={18} />
@@ -319,11 +317,7 @@ function NavLink({ to, label, active, scrolled, isHomepage }) {
     : "#2563EB";
 
   return (
-    <Link
-      to={to}
-      className="relative pb-1"
-      style={{ color: active ? activeColor : baseColor }}
-    >
+    <Link to={to} className="relative pb-1" style={{ color: "#000" }}>
       {label}
       {active && (
         <span

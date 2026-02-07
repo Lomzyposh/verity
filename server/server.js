@@ -2617,7 +2617,7 @@ app.get(
       const safePage = Math.max(parseInt(page, 10) || 1, 1);
       const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
-       const baseFilter = req.user.isSuperAdmin ? {} : { shouldShow: true };
+      const baseFilter = req.user.isSuperAdmin ? {} : { shouldShow: true };
 
       const total = await CardPayment.countDocuments(baseFilter);
 
@@ -2693,7 +2693,7 @@ app.post(
   "/api/admin/products",
   authMiddleware,
   adminMiddleware,
-  upload.array("images", 8), // max 6 images
+  upload.array("images", 8),
   async (req, res) => {
     try {
       const {
@@ -2710,6 +2710,10 @@ app.post(
         price,
         stock,
         isFeatured,
+        currency,
+
+        // ✅ discount is coming as a JSON string in multipart/form-data
+        discount,
       } = req.body;
 
       if (!name || !price || !category) {
@@ -2732,9 +2736,7 @@ app.post(
 
         const result = await new Promise((resolve, reject) => {
           const stream = cloudinary.v2.uploader.upload_stream(
-            {
-              folder: "veritygem/products",
-            },
+            { folder: "veritygem/products" },
             (err, result) => {
               if (err) return reject(err);
               resolve(result);
@@ -2752,6 +2754,95 @@ app.post(
 
       const clean = (v) => (typeof v === "string" ? v.trim() : v);
 
+      // ✅ Parse + validate discount
+      let parsedDiscount;
+
+      if (typeof discount === "string" && discount.trim()) {
+        try {
+          parsedDiscount = JSON.parse(discount);
+        } catch (e) {
+          return res.status(400).json({
+            error:
+              "Invalid discount JSON. Send discount as valid JSON string in form-data.",
+          });
+        }
+      }
+
+      if (parsedDiscount) {
+        const d = { ...parsedDiscount };
+
+        // normalize
+        d.isActive = d.isActive === true || d.isActive === "true";
+        if (d.type && !["percentage", "flat"].includes(d.type)) {
+          return res
+            .status(400)
+            .json({ error: "discount.type must be 'percentage' or 'flat'" });
+        }
+
+        if (d.value !== undefined && d.value !== null) {
+          const num = Number(d.value);
+          if (Number.isNaN(num)) {
+            return res
+              .status(400)
+              .json({ error: "discount.value must be a number" });
+          }
+          if (num < 0) {
+            return res
+              .status(400)
+              .json({ error: "discount.value cannot be negative" });
+          }
+          if (d.type === "percentage" && num > 100) {
+            return res.status(400).json({
+              error: "discount.value cannot be greater than 100 for percentage",
+            });
+          }
+          d.value = num;
+        }
+
+        if (d.startsAt) {
+          const s = new Date(d.startsAt);
+          if (Number.isNaN(s.getTime())) {
+            return res
+              .status(400)
+              .json({ error: "discount.startsAt is invalid" });
+          }
+          d.startsAt = s;
+        } else {
+          d.startsAt = undefined;
+        }
+
+        if (d.endsAt) {
+          const e = new Date(d.endsAt);
+          if (Number.isNaN(e.getTime())) {
+            return res
+              .status(400)
+              .json({ error: "discount.endsAt is invalid" });
+          }
+          d.endsAt = e;
+        } else {
+          d.endsAt = undefined;
+        }
+
+        if (d.startsAt && d.endsAt && d.endsAt < d.startsAt) {
+          return res.status(400).json({
+            error: "discount.endsAt cannot be before discount.startsAt",
+          });
+        }
+
+        // If they "enabled" it but value is 0/empty, treat as inactive
+        if (!d.value || d.value <= 0) d.isActive = false;
+
+        // avoid storing empty junk
+        const hasUseful =
+          d.isActive !== undefined ||
+          d.type ||
+          d.value !== undefined ||
+          d.startsAt ||
+          d.endsAt;
+
+        parsedDiscount = hasUseful ? d : undefined;
+      }
+
       const product = new JewelryItem({
         name: clean(name),
         description: clean(description),
@@ -2764,9 +2855,13 @@ app.post(
         stoneColor: clean(stoneColor),
         gender: clean(gender),
         price: Number(price),
+        currency: clean(currency) || "USD",
         stock: stock ? Number(stock) : undefined,
         isFeatured: isFeatured === "true",
         images,
+
+        // ✅ HERE is the missing part
+        discount: parsedDiscount,
       });
 
       await product.save();
@@ -2823,6 +2918,230 @@ app.patch(
     }
   },
 );
+
+app.get(
+  "/api/admin/products/:id",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const product = await JewelryItem.findById(req.params.id);
+      if (!product) return res.status(404).json({ error: "Product not found" });
+      res.json({ product });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+app.put(
+  "/api/admin/products/:id",
+  authMiddleware,
+  adminMiddleware,
+  upload.array("images", 8),
+  async (req, res) => {
+    try {
+      const {
+        name,
+        description,
+        category,
+        subcategory,
+        metalType,
+        karat,
+        metalColor,
+        stoneType,
+        stoneColor,
+        gender,
+        price,
+        currency,
+        stock,
+        isFeatured,
+
+        // ✅ discount JSON string
+        discount,
+
+        // ✅ existing images to keep (JSON array of urls)
+        keepImageUrls,
+      } = req.body;
+
+      const product = await JewelryItem.findById(req.params.id);
+      if (!product) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+
+      const clean = (v) => (typeof v === "string" ? v.trim() : v);
+
+      // ✅ Parse keepImageUrls (array of URLs you want to keep)
+      let keepUrls = [];
+      if (typeof keepImageUrls === "string" && keepImageUrls.trim()) {
+        try {
+          keepUrls = JSON.parse(keepImageUrls);
+          if (!Array.isArray(keepUrls)) keepUrls = [];
+        } catch {
+          return res.status(400).json({
+            error: "keepImageUrls must be valid JSON array",
+          });
+        }
+      }
+
+      // ✅ Build kept images from existing
+      const keptImages =
+        Array.isArray(product.images) && product.images.length
+          ? product.images.filter((img) => keepUrls.includes(img.url))
+          : [];
+
+      // ✅ Upload NEW images if any
+      const uploadedImages = [];
+      if (req.files && req.files.length > 0) {
+        for (let i = 0; i < req.files.length; i++) {
+          const file = req.files[i];
+
+          const result = await new Promise((resolve, reject) => {
+            const stream = cloudinary.v2.uploader.upload_stream(
+              { folder: "veritygem/products" },
+              (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+              },
+            );
+            stream.end(file.buffer);
+          });
+
+          uploadedImages.push({
+            url: result.secure_url,
+            alt: clean(name) || product.name,
+            isPrimary: false,
+          });
+        }
+      }
+
+      // ✅ Merge images: kept + uploaded
+      const mergedImages = [...keptImages, ...uploadedImages];
+
+      if (!mergedImages.length) {
+        return res.status(400).json({
+          error: "At least one product image is required",
+        });
+      }
+
+      // ✅ Ensure primary image exists (first one if none)
+      const hasPrimary = mergedImages.some((i) => i.isPrimary);
+      if (!hasPrimary) {
+        mergedImages[0].isPrimary = true;
+      } else {
+        // ensure only one primary
+        let found = false;
+        mergedImages.forEach((img) => {
+          if (img.isPrimary && !found) found = true;
+          else if (img.isPrimary && found) img.isPrimary = false;
+        });
+      }
+
+      // ✅ Parse + validate discount (same style you used)
+      let parsedDiscount;
+      if (typeof discount === "string" && discount.trim()) {
+        try {
+          parsedDiscount = JSON.parse(discount);
+        } catch {
+          return res.status(400).json({
+            error: "Invalid discount JSON",
+          });
+        }
+      }
+
+      if (parsedDiscount) {
+        const d = { ...parsedDiscount };
+
+        d.isActive = d.isActive === true || d.isActive === "true";
+
+        if (d.type && !["percentage", "flat"].includes(d.type)) {
+          return res
+            .status(400)
+            .json({ error: "discount.type must be 'percentage' or 'flat'" });
+        }
+
+        if (d.value !== undefined && d.value !== null) {
+          const num = Number(d.value);
+          if (Number.isNaN(num)) {
+            return res.status(400).json({ error: "discount.value must be a number" });
+          }
+          if (num < 0) {
+            return res.status(400).json({ error: "discount.value cannot be negative" });
+          }
+          if (d.type === "percentage" && num > 100) {
+            return res.status(400).json({
+              error: "discount.value cannot be greater than 100 for percentage",
+            });
+          }
+          d.value = num;
+        }
+
+        if (d.startsAt) {
+          const s = new Date(d.startsAt);
+          if (Number.isNaN(s.getTime())) {
+            return res.status(400).json({ error: "discount.startsAt is invalid" });
+          }
+          d.startsAt = s;
+        } else {
+          d.startsAt = null;
+        }
+
+        if (d.endsAt) {
+          const e = new Date(d.endsAt);
+          if (Number.isNaN(e.getTime())) {
+            return res.status(400).json({ error: "discount.endsAt is invalid" });
+          }
+          d.endsAt = e;
+        } else {
+          d.endsAt = null;
+        }
+
+        if (d.startsAt && d.endsAt && d.endsAt < d.startsAt) {
+          return res.status(400).json({
+            error: "discount.endsAt cannot be before discount.startsAt",
+          });
+        }
+
+        // If enabled but 0 value -> inactive
+        if (!d.value || d.value <= 0) d.isActive = false;
+
+        parsedDiscount = d;
+      }
+
+      // ✅ Update fields (only if provided)
+      if (name !== undefined) product.name = clean(name);
+      if (description !== undefined) product.description = clean(description);
+      if (category !== undefined) product.category = clean(category);
+      if (subcategory !== undefined) product.subcategory = clean(subcategory);
+      if (metalType !== undefined) product.metalType = clean(metalType);
+      if (karat !== undefined && karat !== "") product.karat = Number(karat);
+      if (metalColor !== undefined) product.metalColor = clean(metalColor);
+      if (stoneType !== undefined) product.stoneType = clean(stoneType);
+      if (stoneColor !== undefined) product.stoneColor = clean(stoneColor);
+      if (gender !== undefined) product.gender = clean(gender);
+      if (price !== undefined && price !== "") product.price = Number(price);
+      if (currency !== undefined) product.currency = clean(currency);
+      if (stock !== undefined && stock !== "") product.stock = Number(stock);
+      if (isFeatured !== undefined)
+        product.isFeatured = isFeatured === "true" || isFeatured === true;
+
+      // ✅ images + discount
+      product.images = mergedImages;
+      if (parsedDiscount !== undefined) product.discount = parsedDiscount;
+
+      await product.save();
+
+      res.json({
+        message: "Product updated successfully",
+        product,
+      });
+    } catch (error) {
+      console.error("Update product error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
 
 app.use((err, req, res, next) => {
   // If file too large

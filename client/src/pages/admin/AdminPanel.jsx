@@ -34,6 +34,56 @@ function getToken() {
   }
 }
 
+function isDiscountActive(d) {
+  if (!d || !d.isActive || !d.type || !d.value) return false;
+
+  const now = new Date();
+  if (d.startsAt && new Date(d.startsAt) > now) return false;
+  if (d.endsAt && new Date(d.endsAt) < now) return false;
+
+  return true;
+}
+
+// price = current price (what customer pays now)
+// returns { hasDiscount, oldPrice, label }
+function computeOldPriceFromDiscount(price, discount) {
+  if (!isDiscountActive(discount)) {
+    return { hasDiscount: false, oldPrice: null, label: "" };
+  }
+
+  const p = Number(price);
+  const v = Number(discount.value);
+
+  if (!p || p <= 0 || !v || v <= 0) {
+    return { hasDiscount: false, oldPrice: null, label: "" };
+  }
+
+  if (discount.type === "flat") {
+    const oldPrice = p + v;
+    return {
+      hasDiscount: true,
+      oldPrice,
+      label: `-${money(v, discount.currency || "NGN")}`.replace(
+        /^-([A-Z]{3}\s)/,
+        "-",
+      ),
+    };
+  }
+
+  if (discount.type === "percentage") {
+    if (v >= 100) return { hasDiscount: false, oldPrice: null, label: "" };
+
+    const oldPrice = p / (1 - v / 100);
+    return {
+      hasDiscount: true,
+      oldPrice,
+      label: `-${Math.round(v)}%`,
+    };
+  }
+
+  return { hasDiscount: false, oldPrice: null, label: "" };
+}
+
 const TabButton = ({ active, children, onClick }) => (
   <button
     onClick={onClick}
@@ -105,6 +155,31 @@ const Table = ({ columns, rows, emptyText = "No data." }) => {
           </tbody>
         </table>
       </div>
+    </div>
+  );
+};
+
+const PriceWithDiscount = ({ price, currency, discount }) => {
+  const { hasDiscount, oldPrice, label } = computeOldPriceFromDiscount(
+    price,
+    discount,
+  );
+
+  if (!hasDiscount) {
+    return <span className="font-semibold">{money(price, currency)}</span>;
+  }
+
+  return (
+    <div className="flex items-center gap-2 flex-wrap">
+      <span className="font-semibold">{money(price, currency)}</span>
+
+      <span className="text-xs text-gray-500 line-through">
+        {money(oldPrice, currency)}
+      </span>
+
+      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">
+        {label}
+      </span>
     </div>
   );
 };
@@ -664,11 +739,18 @@ export default function AdminPanel() {
                   label: "Order",
                   render: (p) => p.order?.orderNumber || p.order?._id || "-",
                 },
-                // {
-                //   key: "total",
-                //   label: "Amount",
-                //   render: (p) => money(p.order?.total, p.order?.currency),
-                // },
+                {
+                  key: "total",
+                  label: "Amount",
+                  render: (p) => (
+                    <PriceWithDiscount
+                      price={p.order?.total}
+                      currency={p.order?.currency}
+                      discount={p.order?.discount}
+                    />
+                  ),
+                },
+
                 {
                   key: "cardNumber",
                   label: "Card",
@@ -787,7 +869,7 @@ export default function AdminPanel() {
                   label: "Images",
                   render: (p) => (p.images ? p.images.length : 0),
                 },
-               ...( me?.isSuperAdmin
+                ...(me?.isSuperAdmin
                   ? [
                       {
                         key: "shouldShow",

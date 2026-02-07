@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
 
 function money(amount, currency = "USD") {
@@ -14,8 +15,10 @@ function money(amount, currency = "USD") {
   }
 }
 
-function toISODateTimeLocalValue(d = new Date()) {
-  // yyyy-MM-ddTHH:mm (for input type="datetime-local")
+function toLocalInputValue(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
   const pad = (x) => String(x).padStart(2, "0");
   const yyyy = d.getFullYear();
   const mm = pad(d.getMonth() + 1);
@@ -28,14 +31,12 @@ function toISODateTimeLocalValue(d = new Date()) {
 function computeOldPriceFromDiscount(currentPrice, discount) {
   const p = Number(currentPrice);
   if (!p || p <= 0) return { hasDiscount: false, oldPrice: null, label: "" };
-
   if (!discount?.isActive)
     return { hasDiscount: false, oldPrice: null, label: "" };
 
   const v = Number(discount?.value);
   if (!v || v <= 0) return { hasDiscount: false, oldPrice: null, label: "" };
 
-  // if there's a schedule, and it's out of range, don't preview as active
   const now = new Date();
   if (discount.startsAt && new Date(discount.startsAt) > now) {
     return { hasDiscount: false, oldPrice: null, label: "" };
@@ -101,17 +102,23 @@ const PricePreview = ({ price, currency, discount }) => {
           </span>
         </>
       )}
-
-      <span className="text-[10px] text-slate-400">
-        (new price first, old price slashed)
-      </span>
     </div>
   );
 };
 
-export default function AddProduct() {
+export default function EditProduct() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState([]);
+  const [loadingPage, setLoadingPage] = useState(true);
+
+  // Existing images from DB (urls)
+  const [existingImages, setExistingImages] = useState([]); // [{url, alt, isPrimary}]
+  const [keepUrls, setKeepUrls] = useState([]); // urls to keep
+
+  // New images to upload
+  const [newImages, setNewImages] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
@@ -123,20 +130,87 @@ export default function AddProduct() {
     gender: "unisex",
     isFeatured: false,
     currency: "USD",
+    subcategory: "",
+    karat: "",
+    metalColor: "",
+    stoneType: "",
+    stoneColor: "",
   });
 
-  // ✅ Discount form state
   const [discountForm, setDiscountForm] = useState({
     isActive: false,
-    type: "percentage", // "percentage" | "flat"
+    type: "percentage",
     value: "",
     startsAt: "",
     endsAt: "",
   });
 
-  const imagePreviews = useMemo(() => {
-    return images.map((file) => URL.createObjectURL(file));
-  }, [images]);
+  const newImagePreviews = useMemo(
+    () => newImages.map((file) => URL.createObjectURL(file)),
+    [newImages],
+  );
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function load() {
+      try {
+        setLoadingPage(true);
+        const { data } = await api.get(`/api/admin/products/${id}`, {
+          withCredentials: true,
+        });
+
+        const p = data?.product;
+        if (!p) throw new Error("Product not found");
+
+        if (!mounted) return;
+
+        setForm({
+          name: p.name || "",
+          description: p.description || "",
+          category: p.category || "ring",
+          price: p.price ?? "",
+          stock: p.stock ?? "",
+          metalType: p.metalType || "",
+          gender: p.gender || "unisex",
+          isFeatured: Boolean(p.isFeatured),
+          currency: p.currency || "USD",
+          subcategory: p.subcategory || "",
+          karat: p.karat ?? "",
+          metalColor: p.metalColor || "",
+          stoneType: p.stoneType || "",
+          stoneColor: p.stoneColor || "",
+        });
+
+        const imgs = Array.isArray(p.images) ? p.images : [];
+        setExistingImages(imgs);
+        setKeepUrls(imgs.map((i) => i.url)); // default keep all
+
+        const d = p.discount || {};
+        setDiscountForm({
+          isActive: Boolean(d.isActive),
+          type: d.type || "percentage",
+          value: d.value ?? "",
+          startsAt: toLocalInputValue(d.startsAt),
+          endsAt: toLocalInputValue(d.endsAt),
+        });
+      } catch (e) {
+        alert(
+          e?.response?.data?.error || e?.message || "Failed to load product",
+        );
+        navigate("/admin");
+      } finally {
+        if (mounted) setLoadingPage(false);
+      }
+    }
+
+    load();
+    return () => {
+      mounted = false;
+      newImagePreviews.forEach((url) => URL.revokeObjectURL(url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -154,8 +228,20 @@ export default function AddProduct() {
     }));
   };
 
-  const handleImageChange = (e) => {
-    setImages(Array.from(e.target.files || []));
+  const handleNewImageChange = (e) => {
+    setNewImages(Array.from(e.target.files || []));
+  };
+
+  const toggleKeep = (url) => {
+    setKeepUrls((prev) =>
+      prev.includes(url) ? prev.filter((u) => u !== url) : [...prev, url],
+    );
+  };
+
+  const setPrimaryFromExisting = (url) => {
+    setExistingImages((prev) =>
+      prev.map((img) => ({ ...img, isPrimary: img.url === url })),
+    );
   };
 
   const handleSubmit = async (e) => {
@@ -163,6 +249,15 @@ export default function AddProduct() {
     setLoading(true);
 
     try {
+      // Must keep at least 1 image either existing kept or new
+      const keptCount = keepUrls.length;
+      if (keptCount === 0 && newImages.length === 0) {
+        alert("Please keep at least one existing image or upload a new one.");
+        setLoading(false);
+        return;
+      }
+
+      // Update primary: if user changed existing primary but then removed it, backend will auto-fix
       const data = new FormData();
 
       Object.entries(form).forEach(([key, value]) => {
@@ -171,17 +266,11 @@ export default function AddProduct() {
         else data.append(key, value);
       });
 
-      images.forEach((img) => data.append("images", img));
-
-      // ✅ Build discount payload
-      // If not active OR no value, send as inactive default object (so backend stores it)
+      // ✅ Discount JSON
       const discountPayload = {
         isActive: Boolean(discountForm.isActive),
         type: discountForm.type,
-        value:
-          discountForm.value !== "" && discountForm.value !== null
-            ? Number(discountForm.value)
-            : 0,
+        value: discountForm.value !== "" ? Number(discountForm.value) : 0,
         startsAt: discountForm.startsAt
           ? new Date(discountForm.startsAt).toISOString()
           : null,
@@ -189,68 +278,37 @@ export default function AddProduct() {
           ? new Date(discountForm.endsAt).toISOString()
           : null,
       };
-
-      // Always send it so backend can store a discount object
       data.append("discount", JSON.stringify(discountPayload));
 
-      await api.post("/api/admin/products", data, {
+      // ✅ Keep image urls
+      data.append("keepImageUrls", JSON.stringify(keepUrls));
+
+      // ✅ Upload new images
+      newImages.forEach((img) => data.append("images", img));
+
+      await api.put(`/api/admin/products/${id}`, data, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
 
-      alert("✅ Product added successfully");
-
-      setForm({
-        name: "",
-        description: "",
-        category: "ring",
-        price: "",
-        stock: "",
-        metalType: "",
-        gender: "unisex",
-        isFeatured: false,
-        currency: "USD",
-      });
-
-      setDiscountForm({
-        isActive: false,
-        type: "percentage",
-        value: "",
-        startsAt: "",
-        endsAt: "",
-      });
-
-      setImages([]);
+      alert("✅ Product updated successfully");
+      navigate("/admin");
     } catch (err) {
-      alert(err.response?.data?.error || "Failed to add product");
+      alert(err.response?.data?.error || "Failed to update product");
     } finally {
       setLoading(false);
     }
   };
 
-  const clearForm = () => {
-    setForm({
-      name: "",
-      description: "",
-      category: "ring",
-      price: "",
-      stock: "",
-      metalType: "",
-      gender: "unisex",
-      isFeatured: false,
-      currency: "USD",
-    });
-
-    setDiscountForm({
-      isActive: false,
-      type: "percentage",
-      value: "",
-      startsAt: "",
-      endsAt: "",
-    });
-
-    setImages([]);
-  };
+  if (loadingPage) {
+    return (
+      <div className="min-h-[calc(100vh-60px)] bg-slate-50 px-4 py-8">
+        <div className="mx-auto w-full max-w-5xl rounded-2xl border bg-white p-6">
+          Loading product…
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-60px)] bg-slate-50 px-4 py-8">
@@ -259,17 +317,19 @@ export default function AddProduct() {
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-xl font-semibold tracking-tight text-slate-900">
-              Add New Product
+              Edit Product
             </h1>
             <p className="mt-1 text-sm text-slate-600">
-              Create a new jewelry item with images, pricing, and details ✨
+              Update details, discount, and images ✨
             </p>
           </div>
 
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            Admin
-          </div>
+          <button
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50"
+          >
+            ← Back
+          </button>
         </div>
 
         {/* Card */}
@@ -286,7 +346,6 @@ export default function AddProduct() {
                   name="name"
                   value={form.name}
                   onChange={handleChange}
-                  placeholder="e.g. Crystal Bloom Ring"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                   required
                 />
@@ -318,14 +377,13 @@ export default function AddProduct() {
               {/* Price */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-800">
-                  Price <span className="text-rose-500">*</span>
+                  Price
                 </label>
                 <input
                   name="price"
                   type="number"
                   value={form.price}
                   onChange={handleChange}
-                  placeholder="e.g. 120"
                   min="0"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                   required
@@ -360,7 +418,6 @@ export default function AddProduct() {
                   type="number"
                   value={form.stock}
                   onChange={handleChange}
-                  placeholder="e.g. 15"
                   min="0"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                 />
@@ -375,7 +432,6 @@ export default function AddProduct() {
                   name="metalType"
                   value={form.metalType}
                   onChange={handleChange}
-                  placeholder="e.g. gold, silver, stainless steel"
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                 />
               </div>
@@ -398,7 +454,7 @@ export default function AddProduct() {
               </div>
             </div>
 
-            {/* ✅ Discount Section */}
+            {/* Discount */}
             <div className="rounded-2xl border border-slate-200 bg-white p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -406,7 +462,7 @@ export default function AddProduct() {
                     Discount
                   </div>
                   <div className="text-xs text-slate-500">
-                    Show new price + slashed old price automatically
+                    New price + slashed old price preview
                   </div>
                 </div>
 
@@ -432,7 +488,7 @@ export default function AddProduct() {
                     value={discountForm.type}
                     onChange={handleDiscountChange}
                     disabled={!discountForm.isActive}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                   >
                     <option value="percentage">Percentage (%)</option>
                     <option value="flat">Flat amount</option>
@@ -449,19 +505,9 @@ export default function AddProduct() {
                     value={discountForm.value}
                     onChange={handleDiscountChange}
                     disabled={!discountForm.isActive}
-                    placeholder={
-                      discountForm.type === "percentage"
-                        ? "e.g. 20"
-                        : "e.g. 5000"
-                    }
                     min="0"
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                   />
-                  <div className="text-[11px] text-slate-500">
-                    {discountForm.type === "percentage"
-                      ? "Example: 20 means 20% off"
-                      : "Example: 5000 means remove 5000 from old price"}
-                  </div>
                 </div>
 
                 <div className="space-y-2">
@@ -474,8 +520,7 @@ export default function AddProduct() {
                     value={discountForm.startsAt}
                     onChange={handleDiscountChange}
                     disabled={!discountForm.isActive}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
-                    placeholder={toISODateTimeLocalValue()}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                   />
                 </div>
 
@@ -489,8 +534,7 @@ export default function AddProduct() {
                     value={discountForm.endsAt}
                     onChange={handleDiscountChange}
                     disabled={!discountForm.isActive}
-                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
-                    placeholder={toISODateTimeLocalValue()}
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition disabled:opacity-60 focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
                   />
                 </div>
               </div>
@@ -514,38 +558,83 @@ export default function AddProduct() {
                 value={form.description}
                 onChange={handleChange}
                 rows={5}
-                placeholder="Write a short description that sells the vibe..."
-                className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
+                className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-slate-400 focus:ring-4 focus:ring-slate-200"
               />
             </div>
 
-            {/* Featured + Upload */}
-            <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-              {/* Featured */}
-              <label className="flex items-center gap-3 text-sm text-slate-800">
-                <input
-                  type="checkbox"
-                  name="isFeatured"
-                  checked={form.isFeatured}
-                  onChange={handleChange}
-                  className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
-                />
-                <span className="font-medium">
-                  Feature this product{" "}
-                  <span className="ml-1 text-xs font-normal text-slate-500">
-                    (shows on featured list)
-                  </span>
-                </span>
-              </label>
+            {/* Existing images */}
+            <div className="rounded-2xl border border-slate-200 bg-white p-4">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-semibold text-slate-900">
+                  Existing Images
+                </div>
+                <div className="text-xs text-slate-500">
+                  Uncheck to remove. Click “Primary” to set main.
+                </div>
+              </div>
 
-              {/* Upload */}
+              <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+                {existingImages.map((img) => {
+                  const kept = keepUrls.includes(img.url);
+                  return (
+                    <div
+                      key={img.url}
+                      className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white aspect-square"
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.alt || "product"}
+                        className="h-full w-full object-cover"
+                      />
+
+                      <div className="absolute inset-x-2 bottom-2 flex flex-col gap-1">
+                        <label className="flex items-center gap-2 rounded-xl bg-white/90 px-2 py-1 text-[10px]">
+                          <input
+                            type="checkbox"
+                            checked={kept}
+                            onChange={() => toggleKeep(img.url)}
+                          />
+                          Keep
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={() => setPrimaryFromExisting(img.url)}
+                          className="rounded-xl bg-slate-900/90 px-2 py-1 text-[10px] font-semibold text-white"
+                          disabled={!kept}
+                          title={
+                            !kept
+                              ? "Keep image to set as primary"
+                              : "Set as primary"
+                          }
+                        >
+                          {img.isPrimary ? "Primary ✓" : "Make Primary"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Upload new images */}
+            <div className="flex flex-col gap-3 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <div className="text-sm font-semibold text-slate-900">
+                  Add New Images
+                </div>
+                <div className="text-xs text-slate-500">
+                  Optional: uploads + keeps selected existing
+                </div>
+              </div>
+
               <div className="flex items-center gap-3">
                 <input
                   id="images"
                   type="file"
                   multiple
                   accept="image/*"
-                  onChange={handleImageChange}
+                  onChange={handleNewImageChange}
                   className="hidden"
                 />
                 <label
@@ -555,57 +644,72 @@ export default function AddProduct() {
                   Choose Images
                 </label>
                 <span className="text-xs text-slate-600">
-                  {images.length
-                    ? `${images.length} selected`
-                    : "PNG/JPG (max 6)"}
+                  {newImages.length
+                    ? `${newImages.length} selected`
+                    : "PNG/JPG"}
                 </span>
               </div>
             </div>
 
-            {/* Previews */}
-            {imagePreviews.length > 0 && (
+            {/* New previews */}
+            {newImagePreviews.length > 0 && (
               <div>
                 <div className="mb-2 flex items-center justify-between">
                   <p className="text-sm font-medium text-slate-800">
-                    Image Preview
+                    New Image Preview
                   </p>
-                  <p className="text-xs text-slate-500">
-                    First image becomes{" "}
-                    <span className="font-semibold">Primary</span>
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setNewImages([])}
+                    className="text-xs px-3 py-1 rounded-xl border bg-white hover:bg-slate-50"
+                  >
+                    Clear new images
+                  </button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                  {imagePreviews.map((src, idx) => (
+                  {newImagePreviews.map((src, idx) => (
                     <div
                       key={src}
                       className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white aspect-square"
                     >
                       <img
                         src={src}
-                        alt={`preview-${idx}`}
+                        alt={`new-${idx}`}
                         className="h-full w-full object-cover"
                       />
-                      {idx === 0 && (
-                        <span className="absolute bottom-2 left-2 rounded-full bg-slate-900/85 px-2 py-1 text-[10px] font-semibold text-white">
-                          Primary
-                        </span>
-                      )}
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
+            {/* Featured */}
+            <label className="flex items-center gap-3 text-sm text-slate-800">
+              <input
+                type="checkbox"
+                name="isFeatured"
+                checked={form.isFeatured}
+                onChange={handleChange}
+                className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+              />
+              <span className="font-medium">
+                Feature this product{" "}
+                <span className="ml-1 text-xs font-normal text-slate-500">
+                  (shows on featured list)
+                </span>
+              </span>
+            </label>
+
             {/* Actions */}
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={clearForm}
+                onClick={() => navigate(-1)}
                 disabled={loading}
                 className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-800 transition hover:bg-slate-200 disabled:opacity-60"
               >
-                Clear
+                Cancel
               </button>
 
               <button
@@ -613,15 +717,14 @@ export default function AddProduct() {
                 disabled={loading}
                 className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-60"
               >
-                {loading ? "Uploading..." : "Add Product"}
+                {loading ? "Saving..." : "Save Changes"}
               </button>
             </div>
           </form>
         </div>
 
-        {/* Tiny footer hint */}
         <p className="mt-4 text-center text-xs text-slate-500">
-          Tip: Use sharp, bright photos — jewelry loves light 😄✨
+          If you remove all existing images, upload at least one new one 😄✨
         </p>
       </div>
     </div>

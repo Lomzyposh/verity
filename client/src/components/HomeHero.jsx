@@ -21,7 +21,7 @@ export default function HomeHero() {
   return (
     <section
       className="w-full min-h-screen flex items-center justify-center relative pt-16 sm:pt-20 lg:pt-24 overflow-hidden"
-      style={{ background: "#F5F5F7" }}
+      style={{ background: "#FFF" }}
     >
       <div className="absolute inset-0 overflow-hidden">
         <video
