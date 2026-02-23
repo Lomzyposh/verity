@@ -170,7 +170,7 @@ export default function Navbar() {
               className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition border"
               style={{
                 background: shouldDarkText ? "#FFFFFF" : "transparent",
-                color: shouldDarkText ? "#111827" : "#FFFFFF",
+                color: "#111827",
                 borderColor: shouldDarkText
                   ? "rgba(17,24,39,0.06)"
                   : "rgba(255,255,255,0.25)",
@@ -198,7 +198,7 @@ export default function Navbar() {
                   borderColor: shouldDarkText
                     ? "rgba(17,24,39,0.06)"
                     : "rgba(255,255,255,0.25)",
-                  color: shouldDarkText ? "#111827" : "#FFFFFF",
+                  color: "#111827",
                   background: shouldDarkText ? "#FFFFFF" : "transparent",
                 }}
                 aria-haspopup="true"
