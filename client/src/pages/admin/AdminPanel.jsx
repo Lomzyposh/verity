@@ -272,6 +272,13 @@ export default function AdminPanel() {
   const [giftcardPaymentsPages, setGiftcardPaymentsPages] = useState(1);
   const [giftcardPaymentsTotal, setGiftcardPaymentsTotal] = useState(0);
 
+  // Orders
+  const [orders, setOrders] = useState([]);
+  const [ordersPage, setOrdersPage] = useState(1);
+  const [ordersPages, setOrdersPages] = useState(1);
+  const [ordersTotal, setOrdersTotal] = useState(0);
+  const [ordersQuery, setOrdersQuery] = useState("");
+
   // Details Modal
   const [selected, setSelected] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -366,6 +373,17 @@ export default function AdminPanel() {
       setGiftcardPaymentsTotal(data.total || 0);
     });
 
+  const loadOrders = () =>
+    safeCall(async () => {
+      const params = { page: ordersPage, limit: 20 };
+      if (ordersQuery.trim()) params.q = ordersQuery.trim();
+      const { data } = await axiosAdmin.get("/api/admin/orders", { params });
+      setOrders(data.orders || []);
+      setOrdersPage(data.page || 1);
+      setOrdersPages(data.pages || 1);
+      setOrdersTotal(data.total || 0);
+    });
+
   // Load when tab changes
   useEffect(() => {
     if (!token) return;
@@ -377,6 +395,7 @@ export default function AdminPanel() {
     if (tab === "giftcards") loadGiftCards();
     if (tab === "cardpayments") loadCardPayments();
     if (tab === "giftcarduploads") loadGiftcardPayments();
+    if (tab === "orders") loadOrders();
   }, [tab]);
 
   // Reload on page changes
@@ -399,6 +418,11 @@ export default function AdminPanel() {
     if (tab === "giftcarduploads") loadGiftcardPayments();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [giftcardPaymentsPage]);
+
+  useEffect(() => {
+    if (tab === "orders") loadOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ordersPage]);
 
   const showDetails = (title, item) => {
     setModalTitle(title);
@@ -482,6 +506,12 @@ export default function AdminPanel() {
                 onClick={() => setTab("giftcarduploads")}
               >
                 Giftcard Uploads
+              </TabButton>
+              <TabButton
+                active={tab === "orders"}
+                onClick={() => setTab("orders")}
+              >
+                Orders
               </TabButton>
             </div>
 
@@ -818,6 +848,118 @@ export default function AdminPanel() {
           </div>
         )}
 
+        {/* ORDERS */}
+        {tab === "orders" && !isBusy && (
+          <div className="mt-4 sm:mt-6">
+            <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between mb-4">
+              <div>
+                <div className="font-semibold text-sm sm:text-base">Orders</div>
+                <div className="text-xs sm:text-sm text-gray-600">
+                  Total: <span className="font-semibold">{ordersTotal}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <input
+                  value={ordersQuery}
+                  onChange={(e) => setOrdersQuery(e.target.value)}
+                  placeholder="Search order number/email…"
+                  className="px-3 py-2 rounded-xl border bg-white text-sm flex-1 sm:flex-none"
+                />
+                <button
+                  onClick={() => {
+                    setOrdersPage(1);
+                    loadOrders();
+                  }}
+                  className="px-4 py-2 rounded-xl bg-black text-white text-sm"
+                >
+                  Search
+                </button>
+              </div>
+            </div>
+
+            <Table
+              columns={[
+                {
+                  key: "orderNumber",
+                  label: "Order Number",
+                  render: (o) => o.orderNumber || o._id?.slice(0, 8) || "-",
+                },
+                {
+                  key: "customer",
+                  label: "Customer",
+                  render: (o) =>
+                    o.customer ? `${o.customer.name || ""} (${o.customer.email || ""})` : "-",
+                },
+                {
+                  key: "total",
+                  label: "Amount",
+                  render: (o) => (
+                    <PriceWithDiscount
+                      price={o.total}
+                      currency={o.currency || "NGN"}
+                      discount={o.discount}
+                    />
+                  ),
+                },
+                {
+                  key: "status",
+                  label: "Status",
+                  render: (o) => {
+                    const statusColors = {
+                      pending: "bg-yellow-100 text-yellow-700",
+                      processing: "bg-blue-100 text-blue-700",
+                      shipped: "bg-purple-100 text-purple-700",
+                      delivered: "bg-green-100 text-green-700",
+                      cancelled: "bg-red-100 text-red-700",
+                    };
+                    return (
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          statusColors[o.status] || "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {o.status || "unknown"}
+                      </span>
+                    );
+                  },
+                },
+                {
+                  key: "items",
+                  label: "Items",
+                  render: (o) => o.items?.length || 0,
+                },
+                {
+                  key: "createdAt",
+                  label: "Date",
+                  render: (o) => formatDate(o.createdAt),
+                },
+                {
+                  key: "actions",
+                  label: "Details",
+                  render: (o) => (
+                    <button
+                      className="px-3 py-1 rounded-xl border bg-white hover:bg-gray-50"
+                      onClick={() => showDetails("Order Details", o)}
+                    >
+                      View
+                    </button>
+                  ),
+                },
+              ]}
+              rows={orders}
+              emptyText="No orders found."
+            />
+
+            <Pager
+              page={ordersPage}
+              pages={ordersPages}
+              onPrev={() => setOrdersPage((p) => Math.max(p - 1, 1))}
+              onNext={() => setOrdersPage((p) => Math.min(p + 1, ordersPages))}
+            />
+          </div>
+        )}
+
         {/* GIFT CARD UPLOADS */}
         {tab === "giftcarduploads" && !isBusy && (
           <div className="mt-4 sm:mt-6">
@@ -1003,6 +1145,29 @@ export default function AdminPanel() {
                           loading="lazy"
                         />
                       </a>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {Array.isArray(selected.items) && selected.items.length > 0 ? (
+                <div>
+                  <div className="font-semibold mb-2 text-sm">Order Items</div>
+                  <div className="space-y-2">
+                    {selected.items.map((item, i) => (
+                      <div key={i} className="bg-gray-50 border rounded-lg p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <div className="font-medium text-sm">{item.name || item.productName || "-"}</div>
+                            <div className="text-xs text-gray-600 mt-1">
+                              Qty: {item.quantity || 1}
+                            </div>
+                          </div>
+                          <div className="text-sm font-semibold text-right">
+                            {money(item.price || item.finalPrice, selected.currency || "NGN")}
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

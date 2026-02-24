@@ -2,7 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useJewelry } from "../contexts/JewelryContext";
 import LoaderSpinner from "../components/LoaderSpinner";
-import { Pencil } from "lucide-react";
+import { Pencil, Search, X } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
 const CATEGORY_TILES = [
@@ -72,6 +72,10 @@ export default function Shop() {
   const [metalColorFilter, setMetalColorFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
   const [inStockOnly, setInStockOnly] = useState(false);
+
+  // SEARCH STATE
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   const filteredAndSorted = useMemo(() => {
     let items = [...jewelry];
@@ -145,6 +149,22 @@ export default function Shop() {
     inStockOnly,
   ]);
 
+  // SEARCH RESULTS - filters based on search query across all attributes
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+
+    const query = searchQuery.toLowerCase().trim();
+    return jewelry.filter((item) => {
+      const nameMatch = item.name?.toLowerCase().includes(query);
+      const categoryMatch = item.category?.toLowerCase().includes(query);
+      const metalMatch = item.metalType?.toLowerCase().includes(query);
+      const colorMatch = item.metalColor?.toLowerCase().includes(query);
+      const descMatch = item.description?.toLowerCase().includes(query);
+
+      return nameMatch || categoryMatch || metalMatch || colorMatch || descMatch;
+    });
+  }, [jewelry, searchQuery]);
+
   const handleCardClick = (slug) => {
     navigate(`/product/${slug}`);
   };
@@ -166,6 +186,123 @@ export default function Shop() {
             rings.
           </p>
         </div>
+
+        {/* ADVANCED SEARCH BAR */}
+        <section className="mb-8">
+          <div className="relative">
+            <div
+              className="flex items-center border rounded-lg px-4 py-3 bg-white shadow-sm"
+              style={{ borderColor: "#E5E7EB" }}
+            >
+              <Search className="w-5 h-5" style={{ color: "#6B7280" }} />
+              <input
+                type="text"
+                placeholder="Search by name, category, metal type, color..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSearchResults(true);
+                }}
+                className="flex-1 ml-3 outline-none bg-transparent text-sm"
+                style={{ color: "#111827" }}
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setShowSearchResults(false);
+                  }}
+                  className="ml-2 p-1 rounded hover:bg-gray-100"
+                >
+                  <X className="w-4 h-4" style={{ color: "#6B7280" }} />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* SEARCH RESULTS - Horizontal Scrollable List */}
+          {showSearchResults && searchQuery.trim() && (
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold" style={{ color: "#111827" }}>
+                  Search Results ({searchResults.length})
+                </h3>
+                <button
+                  type="button"
+                  onClick={() => setShowSearchResults(false)}
+                  className="text-xs px-3 py-1 rounded border"
+                  style={{ borderColor: "#E5E7EB", color: "#6B7280" }}
+                >
+                  Hide Results
+                </button>
+              </div>
+
+              {searchResults.length === 0 ? (
+                <p style={{ color: "#6B7280" }}>
+                  No products found matching "{searchQuery}"
+                </p>
+              ) : (
+                <div className="overflow-x-auto pb-4 -mx-6 lg:-mx-10 px-6 lg:px-10">
+                  <div className="flex gap-2 sm:gap-3 min-w-min">
+                    {searchResults.map((item) => (
+                      <button
+                        key={item._id || item.sku}
+                        type="button"
+                        onClick={() => {
+                          handleCardClick(item.slug);
+                          setShowSearchResults(false);
+                        }}
+                        className="flex-shrink-0 flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border bg-white hover:shadow-md transition-shadow w-72 sm:w-80 md:w-96"
+                        style={{ borderColor: "#E5E7EB" }}
+                      >
+                        {/* Product Image */}
+                        <div
+                          className="flex-shrink-0 w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden bg-gray-100"
+                          style={{ background: "#F3F4F6" }}
+                        >
+                          <img
+                            src={
+                              item.images?.[0]?.url || "/images/placeholder.jpg"
+                            }
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+
+                        {/* Product Info */}
+                        <div className="flex-1 text-left min-w-0">
+                          <h4
+                            className="text-xs sm:text-sm font-semibold truncate"
+                            style={{ color: "#111827" }}
+                          >
+                            {item.name}
+                          </h4>
+                          <p className="text-[11px] sm:text-xs mt-1 line-clamp-1" style={{ color: "#6B7280" }}>
+                            {item.metalType && item.metalColor
+                              ? `${item.karat || ""}k ${capitalize(item.metalColor)} ${capitalize(item.metalType)}`
+                              : item.category
+                                ? capitalize(item.category)
+                                : ""}
+                          </p>
+                          <p
+                            className="text-xs sm:text-sm font-semibold mt-1"
+                            style={{ color: "#111827" }}
+                          >
+                            {formatPrice(
+                              item.price ?? item.finalPrice,
+                              item.currency
+                            )}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </section>
 
         {/* CATEGORY TILES (like Tiffany top row) */}
         <section className="mb-14">

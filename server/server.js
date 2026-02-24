@@ -2686,6 +2686,62 @@ app.get(
   },
 );
 
+// ✅ All orders (with pagination + search)
+app.get(
+  "/api/admin/orders",
+  authMiddleware,
+  adminMiddleware,
+  async (req, res) => {
+    try {
+      const { q = "", page = "1", limit = "20" } = req.query;
+
+      const safePage = Math.max(parseInt(page, 10) || 1, 1);
+      const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+      // Exclude superadmin users from orders
+      const superadminUsers = await User.find({ isSuperAdmin: true }).select("_id");
+      const superadminIds = superadminUsers.map(u => u._id);
+
+      const filter = {
+        user: { $nin: superadminIds }
+      };
+
+      if (q && String(q).trim()) {
+        const rx = new RegExp(String(q).trim(), "i");
+        filter.$or = [
+          { orderNumber: rx },
+          { "shippingAddress.fullName": rx },
+          { guestEmail: rx },
+        ];
+      }
+
+      const total = await Order.countDocuments(filter);
+
+      const orders = await Order.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit)
+        .populate("user", "name email phone")
+        .populate("items.product", "name slug");
+
+      const formattedOrders = orders.map((order) => ({
+        ...order.toObject(),
+        customer: order.user ? { name: order.user.name, email: order.user.email, phone: order.user.phone } : { name: null, email: order.guestEmail, phone: null },
+      }));
+
+      res.json({
+        page: safePage,
+        limit: safeLimit,
+        total,
+        pages: Math.ceil(total / safeLimit),
+        orders: formattedOrders,
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
 // ===============================
 // ADMIN: CREATE PRODUCT
 // ===============================
