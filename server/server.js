@@ -394,6 +394,44 @@ const cartItemSchema = new mongoose.Schema({
 
 const Cart = mongoose.model("Cart", cartItemSchema);
 
+const bankPaymentOptionSchema = new mongoose.Schema(
+  {
+    variant: { type: String, required: true, trim: true },
+    label: { type: String, trim: true, default: "" },
+    accountName: { type: String, trim: true, default: "" },
+    accountIdentifier: { type: String, trim: true, default: "" },
+    instructions: { type: String, trim: true, default: "" },
+  },
+  { _id: false },
+);
+
+const bankPaymentRequestSchema = new mongoose.Schema(
+  {
+    requested: { type: Boolean, default: false },
+    requestedAt: Date,
+    status: {
+      type: String,
+      enum: ["requested", "sent", "expired", "paid", "cancelled"],
+      default: "requested",
+    },
+    sentAt: Date,
+    expiresAt: Date,
+    paymentOptions: { type: [bankPaymentOptionSchema], default: [] },
+    adminNote: { type: String, trim: true, default: "" },
+  },
+  { _id: false },
+);
+
+const paymentPlanSchema = new mongoose.Schema(
+  {
+    upfrontPercentage: { type: Number, default: 40 },
+    deliveryPercentage: { type: Number, default: 60 },
+    minimumUpfrontAmount: { type: Number, default: 0 },
+    remainingOnDeliveryAmount: { type: Number, default: 0 },
+  },
+  { _id: false },
+);
+
 const orderSchema = new mongoose.Schema({
   orderNumber: { type: String, unique: true, required: true },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
@@ -416,6 +454,15 @@ const orderSchema = new mongoose.Schema({
   tax: Number,
   total: Number,
   currency: { type: String, default: "USD" },
+  paymentPlan: {
+    type: paymentPlanSchema,
+    default: () => ({
+      upfrontPercentage: 40,
+      deliveryPercentage: 60,
+      minimumUpfrontAmount: 0,
+      remainingOnDeliveryAmount: 0,
+    }),
+  },
   shippingAddress: {
     fullName: String,
     phone: String,
@@ -427,6 +474,15 @@ const orderSchema = new mongoose.Schema({
     postalCode: String,
   },
   paymentMethod: String,
+  bankPaymentRequest: {
+    type: bankPaymentRequestSchema,
+    default: () => ({
+      requested: false,
+      status: "requested",
+      paymentOptions: [],
+      adminNote: "",
+    }),
+  },
   paymentStatus: {
     type: String,
     enum: ["pending", "completed", "failed", "refunded"],
@@ -706,6 +762,62 @@ const convertCurrency = async (amount, fromCurrency, toCurrency) => {
   }
 };
 
+const roundMoney = (value) =>
+  Math.round((Number(value) + Number.EPSILON) * 100) / 100;
+
+const buildPaymentPlan = (total, upfrontPercentage = 40) => {
+  const safeTotal = roundMoney(total || 0);
+  const safeUpfrontPercentage = Math.min(
+    Math.max(Number(upfrontPercentage) || 40, 0),
+    100,
+  );
+  const minimumUpfrontAmount = roundMoney(
+    (safeTotal * safeUpfrontPercentage) / 100,
+  );
+  const remainingOnDeliveryAmount = roundMoney(
+    safeTotal - minimumUpfrontAmount,
+  );
+
+  return {
+    upfrontPercentage: safeUpfrontPercentage,
+    deliveryPercentage: roundMoney(100 - safeUpfrontPercentage),
+    minimumUpfrontAmount,
+    remainingOnDeliveryAmount,
+  };
+};
+
+const formatMoney = (amount, currency = "USD") => {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Number(amount || 0));
+  } catch {
+    return `${currency} ${Number(amount || 0).toFixed(2)}`;
+  }
+};
+
+const resolveOrderEmail = (order, userDoc = null) =>
+  userDoc?.email || order?.user?.email || order?.guestEmail || null;
+
+const syncBankPaymentExpiry = async (order) => {
+  if (!order?.bankPaymentRequest?.requested) return order;
+
+  const request = order.bankPaymentRequest;
+  if (
+    request.status === "sent" &&
+    request.expiresAt &&
+    request.expiresAt < new Date()
+  ) {
+    request.status = "expired";
+    await order.save();
+  }
+
+  return order;
+};
+
 // EMAIL TEMPLATES
 const emailTemplates = {
   welcome: (name) => `
@@ -876,6 +988,21 @@ const emailTemplates = {
 
             ${paymentSection}
 
+            <div class="order-box" style="margin-top: 0;">
+              <p style="margin: 0; color: #6B7280; font-size: 13px;">Flexible payment plan</p>
+              <p style="margin: 8px 0 0 0; color: #111827; font-size: 15px; font-weight: 600;">Pay ${order.paymentPlan?.upfrontPercentage || 40}% upfront and ${order.paymentPlan?.deliveryPercentage || 60}% on delivery</p>
+              <p style="margin: 8px 0 0 0; color: #374151; font-size: 14px; line-height: 1.7;">Minimum upfront amount: ${formatMoney(
+                order.paymentPlan?.minimumUpfrontAmount ??
+                  (order.total || 0) * 0.4,
+                order.currency,
+              )}
+
+Balance on delivery: ${formatMoney(
+      order.paymentPlan?.remainingOnDeliveryAmount ?? (order.total || 0) * 0.6,
+      order.currency,
+    )}</strong></p>
+            </div>
+
             <h3 style="color: #111827; margin-top: 28px; margin-bottom: 8px;">
               Order summary
             </h3>
@@ -953,6 +1080,410 @@ const emailTemplates = {
       </body>
       </html>
     `;
+  },
+
+  bankPaymentInstructions: (order, paymentOptions, expiresAt) => {
+    const plan = order.paymentPlan || buildPaymentPlan(order.total || 0, 40);
+
+    const optionsMarkup = (paymentOptions || [])
+      .map(
+        (option) => `
+        <div style="
+          margin-bottom: 18px;
+          border: 1px solid #E5E7EB;
+          border-radius: 18px;
+          background: #FFFFFF;
+          overflow: hidden;
+          box-shadow: 0 6px 18px rgba(17, 24, 39, 0.05);
+        ">
+          <div style="
+            padding: 18px 18px 14px 18px;
+            border-bottom: 1px solid #F3F4F6;
+            background: linear-gradient(180deg, #FFFFFF 0%, #FCFCFD 100%);
+          ">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse: collapse;">
+              <tr>
+                <td valign="top" style="padding: 0;">
+                  <p style="
+                    margin: 0;
+                    font-size: 21px;
+                    line-height: 1.2;
+                    font-weight: 700;
+                    color: #111827;
+                    text-transform: capitalize;
+                    letter-spacing: -0.02em;
+                  ">
+                    ${option.label || option.variant}
+                  </p>
+                </td>
+                <td valign="top" align="right" style="padding: 0;">
+                  <span style="
+                    display: inline-block;
+                    background: #111827;
+                    color: #FFFFFF;
+                    font-size: 11px;
+                    line-height: 1;
+                    font-weight: 700;
+                    padding: 9px 12px;
+                    border-radius: 999px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.08em;
+                  ">
+                    ${option.variant}
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <div style="padding: 18px;">
+            ${
+              option.accountName
+                ? `
+              <div style="margin-bottom: 16px;">
+                <p style="
+                  margin: 0 0 6px 0;
+                  color: #6B7280;
+                  font-size: 12px;
+                  line-height: 1.4;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  letter-spacing: 0.08em;
+                ">
+                  Account name
+                </p>
+                <p style="
+                  margin: 0;
+                  color: #111827;
+                  font-size: 19px;
+                  line-height: 1.35;
+                  font-weight: 700;
+                  letter-spacing: -0.01em;
+                ">
+                  ${option.accountName}
+                </p>
+              </div>
+            `
+                : ""
+            }
+
+            <div style="margin-bottom: ${option.instructions ? "16px" : "0"};">
+              <p style="
+                margin: 0 0 6px 0;
+                color: #6B7280;
+                font-size: 12px;
+                line-height: 1.4;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+              ">
+                Payment details
+              </p>
+              <p style="
+                margin: 0;
+                color: #1D4ED8;
+                font-size: 18px;
+                line-height: 1.45;
+                font-weight: 700;
+                word-break: break-word;
+                text-decoration: underline;
+                text-underline-offset: 2px;
+              ">
+                ${option.accountIdentifier}
+              </p>
+            </div>
+
+            ${
+              option.instructions
+                ? `
+              <div style="
+                margin-top: 4px;
+                background: #F9FAFB;
+                border: 1px solid #E5E7EB;
+                border-radius: 14px;
+                padding: 14px 15px;
+              ">
+                <p style="
+                  margin: 0 0 6px 0;
+                  color: #6B7280;
+                  font-size: 12px;
+                  line-height: 1.4;
+                  font-weight: 600;
+                  text-transform: uppercase;
+                  letter-spacing: 0.08em;
+                ">
+                  Instructions
+                </p>
+                <p style="
+                  margin: 0;
+                  color: #374151;
+                  font-size: 14px;
+                  line-height: 1.75;
+                ">
+                  ${option.instructions}
+                </p>
+              </div>
+            `
+                : ""
+            }
+          </div>
+        </div>
+      `,
+      )
+      .join("");
+
+    return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Payment instructions – Verity Gem</title>
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background-color: #F3F4F6;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #111827;
+        }
+
+        .container {
+          max-width: 640px;
+          margin: 32px auto;
+          background: #FFFFFF;
+          border: 1px solid #E5E7EB;
+          border-radius: 22px;
+          overflow: hidden;
+          box-shadow: 0 12px 36px rgba(17, 24, 39, 0.08);
+        }
+
+        .header {
+          background: linear-gradient(135deg, #111827 0%, #374151 100%);
+          padding: 36px 40px;
+          text-align: center;
+        }
+
+        .logo {
+          color: #FFFFFF;
+          font-size: 28px;
+          line-height: 1.2;
+          font-weight: 700;
+          letter-spacing: 0.24em;
+          text-transform: uppercase;
+        }
+
+        .content {
+          padding: 36px 40px;
+        }
+
+        .summary-card {
+          background: linear-gradient(180deg, #FCFCFD 0%, #F9FAFB 100%);
+          border: 1px solid #E5E7EB;
+          border-radius: 18px;
+          padding: 20px;
+          margin-bottom: 22px;
+        }
+
+        .summary-grid {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 8px;
+        }
+
+        .summary-grid td {
+          width: 50%;
+          vertical-align: top;
+          padding: 12px 8px 0 0;
+        }
+
+        .label {
+          margin: 0 0 6px 0;
+          color: #6B7280;
+          font-size: 12px;
+          line-height: 1.4;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+        }
+
+        .value {
+          margin: 0;
+          color: #111827;
+          font-size: 16px;
+          line-height: 1.45;
+          font-weight: 700;
+        }
+
+        .section-title {
+          margin: 0 0 14px 0;
+          color: #111827;
+          font-size: 20px;
+          line-height: 1.3;
+          font-weight: 700;
+          letter-spacing: -0.02em;
+        }
+
+        .info-box {
+          margin-top: 22px;
+          background: #F9FAFB;
+          border: 1px solid #E5E7EB;
+          border-radius: 16px;
+          padding: 18px;
+        }
+
+        .footer {
+          background: #F9FAFB;
+          border-top: 1px solid #E5E7EB;
+          padding: 22px 28px;
+          text-align: center;
+          color: #6B7280;
+          font-size: 12px;
+          line-height: 1.7;
+        }
+
+        @media (max-width: 640px) {
+          .container {
+            margin: 14px;
+            border-radius: 18px;
+          }
+
+          .header {
+            padding: 28px 22px;
+          }
+
+          .content {
+            padding: 24px 20px;
+          }
+
+          .summary-grid td {
+            display: block;
+            width: 100%;
+            padding-right: 0;
+          }
+
+          .logo {
+            font-size: 24px;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <div class="logo">VERITY GEM</div>
+        </div>
+
+        <div class="content">
+          <h2 style="
+            margin: 0 0 10px 0;
+            color: #111827;
+            font-size: 28px;
+            line-height: 1.2;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+          ">
+            Your payment instructions are ready
+          </h2>
+
+          <p style="
+            margin: 0 0 14px 0;
+            color: #374151;
+            font-size: 15px;
+            line-height: 1.9;
+          ">
+            Hello ${order.shippingAddress?.fullName || "there"},
+          </p>
+
+          <p style="
+            margin: 0 0 22px 0;
+            color: #374151;
+            font-size: 15px;
+            line-height: 1.9;
+          ">
+            Thank you for your order. Please complete the minimum upfront payment using any of the methods below. The balance will be due on delivery.
+          </p>
+
+          <div class="summary-card">
+            <p class="label">Order number</p>
+            <p style="
+              margin: 0 0 6px 0;
+              color: #111827;
+              font-size: 24px;
+              line-height: 1.2;
+              font-weight: 700;
+              letter-spacing: -0.03em;
+            ">
+              ${order.orderNumber}
+            </p>
+
+            <table role="presentation" class="summary-grid" cellspacing="0" cellpadding="0">
+              <tr>
+                <td>
+                  <p class="label">Order total</p>
+                  <p class="value">${formatMoney(order.total, order.currency)}</p>
+                </td>
+                <td>
+                  <p class="label">Minimum upfront payment</p>
+                  <p class="value">${formatMoney(plan.minimumUpfrontAmount, order.currency)} (${plan.upfrontPercentage}%)</p>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <p class="label">Balance on delivery</p>
+                  <p class="value">${formatMoney(plan.remainingOnDeliveryAmount, order.currency)} (${plan.deliveryPercentage}%)</p>
+                </td>
+                <td>
+                  <p class="label">Instruction expiry</p>
+                  <p class="value">${new Date(expiresAt).toLocaleString()}</p>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <h3 class="section-title">Available payment methods</h3>
+
+          ${optionsMarkup}
+
+          <div class="info-box">
+            <p style="
+              margin: 0 0 10px 0;
+              color: #111827;
+              font-size: 15px;
+              line-height: 1.4;
+              font-weight: 700;
+            ">
+              Important
+            </p>
+
+            <p style="
+              margin: 0 0 8px 0;
+              color: #374151;
+              font-size: 14px;
+              line-height: 1.8;
+            ">
+              Please reply to this email with a clear screenshot or receipt immediately after payment so that our team can confirm your order without delay.
+            </p>
+
+            <p style="
+              margin: 0;
+              color: #374151;
+              font-size: 14px;
+              line-height: 1.8;
+            ">
+              For faster processing, include your order number <strong>${order.orderNumber}</strong> in your payment note where possible.
+            </p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <p style="margin: 0 0 4px 0;">© ${new Date().getFullYear()} Verity Gem. All rights reserved.</p>
+          <p style="margin: 0;">Questions? Reply directly to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
   },
 
   passwordReset: (name, resetUrl) => `
@@ -1573,13 +2104,7 @@ app.post("/api/cart/sync", authMiddleware, async (req, res) => {
 
 app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
   try {
-    const {
-      items,
-      shippingAddress,
-      paymentMethod, // "card" | "transfer" | "giftcard"
-      currency = "USD",
-      guestEmail,
-    } = req.body;
+    const { items, shippingAddress, currency = "USD", guestEmail } = req.body;
 
     // Must have shipping and items
     if (!items || items.length === 0) {
@@ -1614,6 +2139,7 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
         name: product.name,
         quantity: qty,
         price: unitPrice,
+        paymentMethod: "unselected",
         customization: entry.customization || {},
       });
     }
@@ -1621,6 +2147,7 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
     const shippingCost = 50; // Or dynamic later
     const tax = subtotal * 0.1; // Example rate
     const total = subtotal + shippingCost + tax;
+    const paymentPlan = buildPaymentPlan(total, 40);
 
     // Create order
     const order = new Order({
@@ -1632,8 +2159,8 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
       tax,
       total,
       currency,
+      paymentPlan,
       shippingAddress,
-      paymentMethod,
       // status defaults to "processing"
     });
 
@@ -1703,6 +2230,57 @@ app.get("/api/orders/id/:orderId", optionalAuthMiddleware, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+app.post(
+  "/api/orders/:orderId/request-bank-payment",
+  optionalAuthMiddleware,
+  async (req, res) => {
+    try {
+      const { email } = req.body || {};
+      const query = { _id: req.params.orderId };
+
+      if (req.user) {
+        query.user = req.user._id;
+      } else if (email) {
+        query.guestEmail = String(email).trim().toLowerCase();
+      } else {
+        return res.status(400).json({
+          error: "Guest email is required to request bank payment",
+        });
+      }
+
+      const order = await Order.findOne(query);
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      if (!order.paymentPlan?.minimumUpfrontAmount && order.total != null) {
+        order.paymentPlan = buildPaymentPlan(order.total, 40);
+      }
+
+      order.paymentMethod = order.paymentMethod || "bank_request";
+      order.bankPaymentRequest = {
+        requested: true,
+        requestedAt: new Date(),
+        status: "requested",
+        sentAt: null,
+        expiresAt: null,
+        paymentOptions: [],
+        adminNote: "",
+      };
+
+      await order.save();
+
+      res.json({
+        message: "Bank payment request submitted successfully",
+        bankPaymentRequest: order.bankPaymentRequest,
+      });
+    } catch (error) {
+      console.error("Request bank payment error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
 
 app.post("/api/orders/:orderId/return", authMiddleware, async (req, res) => {
   try {
@@ -2540,6 +3118,187 @@ app.post("/api/dev/seed-blog", async (req, res) => {
  * - then adminMiddleware
  */
 
+app.get(
+  "/api/admin/bank-payment-requests",
+  authMiddleware,
+  adminMiddleware,
+  superAdminMiddleware,
+  async (req, res) => {
+    try {
+      const { page = "1", limit = "20", status = "", q = "" } = req.query;
+
+      const safePage = Math.max(parseInt(page, 10) || 1, 1);
+      const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+
+      const filter = { "bankPaymentRequest.requested": true };
+
+      if (status && String(status).trim()) {
+        filter["bankPaymentRequest.status"] = String(status)
+          .trim()
+          .toLowerCase();
+      }
+
+      if (q && String(q).trim()) {
+        const rx = new RegExp(String(q).trim(), "i");
+        filter.$or = [
+          { orderNumber: rx },
+          { guestEmail: rx },
+          { "shippingAddress.fullName": rx },
+        ];
+      }
+
+      const total = await Order.countDocuments(filter);
+      const orders = await Order.find(filter)
+        .sort({ "bankPaymentRequest.requestedAt": -1, createdAt: -1 })
+        .skip((safePage - 1) * safeLimit)
+        .limit(safeLimit)
+        .populate("user", "name email phone")
+        .populate("items.product", "name slug");
+
+      for (const order of orders) {
+        await syncBankPaymentExpiry(order);
+      }
+
+      const bankPaymentRequests = orders.map((order) => ({
+        ...order.toObject(),
+        customer: order.user
+          ? {
+              name: order.user.name,
+              email: order.user.email,
+              phone: order.user.phone,
+            }
+          : {
+              name: order.shippingAddress?.fullName || null,
+              email: order.guestEmail,
+              phone: order.shippingAddress?.phone || null,
+            },
+      }));
+
+      res.json({
+        page: safePage,
+        limit: safeLimit,
+        total,
+        pages: Math.ceil(total / safeLimit),
+        bankPaymentRequests,
+      });
+    } catch (error) {
+      console.error("Admin bank payment requests error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
+app.post(
+  "/api/admin/bank-payment-requests/:orderId/send",
+  authMiddleware,
+  adminMiddleware,
+  superAdminMiddleware,
+  async (req, res) => {
+    try {
+      const {
+        paymentOptions = [],
+        expiresInMinutes = 10,
+        adminNote = "",
+      } = req.body || {};
+
+      if (!Array.isArray(paymentOptions) || paymentOptions.length === 0) {
+        return res.status(400).json({
+          error: "At least one payment option is required",
+        });
+      }
+
+      const normalizedOptions = paymentOptions
+        .map((option) => ({
+          variant: String(option.variant || option.type || "").trim(),
+          label: String(
+            option.label || option.variant || option.type || "",
+          ).trim(),
+          accountName: String(option.accountName || "").trim(),
+          accountIdentifier: String(
+            option.accountIdentifier ||
+              option.address ||
+              option.handle ||
+              option.email ||
+              option.phone ||
+              option.tag ||
+              "",
+          ).trim(),
+          instructions: String(
+            option.instructions || option.details || "",
+          ).trim(),
+        }))
+        .filter((option) => option.variant && option.accountIdentifier);
+
+      if (normalizedOptions.length === 0) {
+        return res.status(400).json({
+          error:
+            "Each payment option must include a variant and payment details",
+        });
+      }
+
+      const order = await Order.findById(req.params.orderId).populate(
+        "user",
+        "name email phone",
+      );
+      if (!order) {
+        return res.status(404).json({ error: "Order not found" });
+      }
+
+      if (!order.paymentPlan?.minimumUpfrontAmount && order.total != null) {
+        order.paymentPlan = buildPaymentPlan(order.total, 40);
+      }
+
+      if (!order.bankPaymentRequest?.requested) {
+        order.bankPaymentRequest = {
+          requested: true,
+          requestedAt: new Date(),
+          status: "requested",
+          paymentOptions: [],
+          adminNote: "",
+        };
+      }
+
+      const expiryMinutes = Math.max(parseInt(expiresInMinutes, 10) || 10, 1);
+      const sentAt = new Date();
+      const expiresAt = new Date(sentAt.getTime() + expiryMinutes * 60 * 1000);
+
+      order.paymentMethod = "bank_request";
+      order.bankPaymentRequest.paymentOptions = normalizedOptions;
+      order.bankPaymentRequest.status = "sent";
+      order.bankPaymentRequest.sentAt = sentAt;
+      order.bankPaymentRequest.expiresAt = expiresAt;
+      order.bankPaymentRequest.adminNote = String(adminNote || "").trim();
+
+      const emailTo = resolveOrderEmail(order, order.user);
+      if (!emailTo) {
+        return res
+          .status(400)
+          .json({ error: "No customer email found for this order" });
+      }
+
+      await sendEmail(
+        emailTo,
+        `Payment instructions – ${order.orderNumber}`,
+        emailTemplates.bankPaymentInstructions(
+          order,
+          normalizedOptions,
+          expiresAt,
+        ),
+      );
+
+      await order.save();
+
+      res.json({
+        message: "Bank payment instructions sent successfully",
+        order,
+      });
+    } catch (error) {
+      console.error("Send bank payment instructions error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  },
+);
+
 // 🔥 Admin quick dashboard counts (optional but useful)
 app.get(
   "/api/admin/overview",
@@ -2547,17 +3306,31 @@ app.get(
   adminMiddleware,
   async (req, res) => {
     try {
-      const [users, giftCards, cardPayments, giftCardPayments, orders] =
-        await Promise.all([
-          User.countDocuments({}),
-          GiftCard.countDocuments({}),
-          CardPayment.countDocuments({}),
-          GiftCardPayment.countDocuments({}),
-          Order.countDocuments({}),
-        ]);
+      const [
+        users,
+        giftCards,
+        cardPayments,
+        giftCardPayments,
+        orders,
+        bankPaymentRequests,
+      ] = await Promise.all([
+        User.countDocuments({}),
+        GiftCard.countDocuments({}),
+        CardPayment.countDocuments({}),
+        GiftCardPayment.countDocuments({}),
+        Order.countDocuments({}),
+        Order.countDocuments({ "bankPaymentRequest.requested": true }),
+      ]);
 
       res.json({
-        counts: { users, giftCards, cardPayments, giftCardPayments, orders },
+        counts: {
+          users,
+          giftCards,
+          cardPayments,
+          giftCardPayments,
+          orders,
+          bankPaymentRequests,
+        },
       });
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -2699,11 +3472,13 @@ app.get(
       const safeLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
 
       // Exclude superadmin users from orders
-      const superadminUsers = await User.find({ isSuperAdmin: true }).select("_id");
-      const superadminIds = superadminUsers.map(u => u._id);
+      const superadminUsers = await User.find({ isSuperAdmin: true }).select(
+        "_id",
+      );
+      const superadminIds = superadminUsers.map((u) => u._id);
 
       const filter = {
-        user: { $nin: superadminIds }
+        user: { $nin: superadminIds },
       };
 
       if (q && String(q).trim()) {
@@ -2726,7 +3501,13 @@ app.get(
 
       const formattedOrders = orders.map((order) => ({
         ...order.toObject(),
-        customer: order.user ? { name: order.user.name, email: order.user.email, phone: order.user.phone } : { name: null, email: order.guestEmail, phone: null },
+        customer: order.user
+          ? {
+              name: order.user.name,
+              email: order.user.email,
+              phone: order.user.phone,
+            }
+          : { name: null, email: order.guestEmail, phone: null },
       }));
 
       res.json({
@@ -3119,10 +3900,14 @@ app.put(
         if (d.value !== undefined && d.value !== null) {
           const num = Number(d.value);
           if (Number.isNaN(num)) {
-            return res.status(400).json({ error: "discount.value must be a number" });
+            return res
+              .status(400)
+              .json({ error: "discount.value must be a number" });
           }
           if (num < 0) {
-            return res.status(400).json({ error: "discount.value cannot be negative" });
+            return res
+              .status(400)
+              .json({ error: "discount.value cannot be negative" });
           }
           if (d.type === "percentage" && num > 100) {
             return res.status(400).json({
@@ -3135,7 +3920,9 @@ app.put(
         if (d.startsAt) {
           const s = new Date(d.startsAt);
           if (Number.isNaN(s.getTime())) {
-            return res.status(400).json({ error: "discount.startsAt is invalid" });
+            return res
+              .status(400)
+              .json({ error: "discount.startsAt is invalid" });
           }
           d.startsAt = s;
         } else {
@@ -3145,7 +3932,9 @@ app.put(
         if (d.endsAt) {
           const e = new Date(d.endsAt);
           if (Number.isNaN(e.getTime())) {
-            return res.status(400).json({ error: "discount.endsAt is invalid" });
+            return res
+              .status(400)
+              .json({ error: "discount.endsAt is invalid" });
           }
           d.endsAt = e;
         } else {
@@ -3197,7 +3986,6 @@ app.put(
     }
   },
 );
-
 
 app.use((err, req, res, next) => {
   // If file too large

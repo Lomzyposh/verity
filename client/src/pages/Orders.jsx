@@ -196,6 +196,8 @@ function OrderCard({ order }) {
     paymentMethod,
     orderStatus: status,
     shippingAddress,
+    paymentPlan,
+    bankPaymentRequest,
   } = order;
 
   const [resending, setResending] = useState(false);
@@ -211,6 +213,12 @@ function OrderCard({ order }) {
       : null;
 
   const placedDate = createdAt ? new Date(createdAt).toLocaleDateString() : "";
+  const minimumUpfrontAmount =
+    Number(paymentPlan?.minimumUpfrontAmount) ||
+    Math.round(((Number(total ?? subtotal ?? 0) * Number(paymentPlan?.upfrontPercentage ?? 40)) / 100) * 100) / 100;
+  const remainingOnDeliveryAmount =
+    Number(paymentPlan?.remainingOnDeliveryAmount) ||
+    Math.round((Number(total ?? subtotal ?? 0) - minimumUpfrontAmount) * 100) / 100;
 
   const displayStatus = (status || "processing").toLowerCase();
   const statusColor = getStatusStyles(displayStatus);
@@ -338,6 +346,23 @@ function OrderCard({ order }) {
             </p>
           )}
         </div>
+      </div>
+
+      <div
+        className="rounded-2xl border px-4 py-4 text-xs space-y-2"
+        style={{ borderColor: "#D1FAE5", background: "#ECFDF5" }}
+      >
+        <p className="font-semibold uppercase tracking-wide" style={{ color: "#065F46" }}>
+          Payment plan
+        </p>
+        <p style={{ color: "#111827" }}>
+          Minimum upfront payment: <span className="font-semibold">{formatPrice(minimumUpfrontAmount, currency)}</span> · Balance on delivery: <span className="font-semibold">{formatPrice(remainingOnDeliveryAmount, currency)}</span>
+        </p>
+        {bankPaymentRequest?.requested && (
+          <p style={{ color: "#047857" }}>
+            Bank payment request status: {capitalize(bankPaymentRequest.status || "requested")}.
+          </p>
+        )}
       </div>
 
       {/* Bottom: breakdown + CTA + resend */}

@@ -33,7 +33,6 @@ export default function Checkout() {
     notes: "",
   });
 
-  const [paymentMethod, setPaymentMethod] = useState("card"); // "card" | "transfer" | "giftcard"
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { user, loading } = useAuth();
@@ -58,6 +57,8 @@ export default function Checkout() {
 
   const shippingFee = hasItems ? 25 : 0;
   const total = subtotal + shippingFee;
+  const minimumUpfrontAmount = Math.round(total * 0.4 * 100) / 100;
+  const remainingOnDeliveryAmount = Math.round((total - minimumUpfrontAmount) * 100) / 100;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -101,7 +102,6 @@ export default function Checkout() {
       const payload = {
         items,
         shippingAddress,
-        paymentMethod,
         currency: "USD",
       };
 
@@ -452,186 +452,6 @@ export default function Checkout() {
                   />
                 </div>
 
-                {/* PAYMENT METHOD SECTION */}
-                <div
-                  className="space-y-2 pt-2 border-t"
-                  style={{ borderColor: "#E5E7EB" }}
-                >
-                  <h2
-                    className="text-sm font-semibold"
-                    style={{ color: "#111827" }}
-                  >
-                    Payment method
-                  </h2>
-                  <p className="text-[11px]" style={{ color: "#6B7280" }}>
-                    Choose how you’d like to pay for this order.
-                  </p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-2">
-                    {/* Card payment */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("card")}
-                      className="w-full text-left rounded-2xl p-3 sm:p-4 lg:p-5 border flex flex-col gap-2 transition-all"
-                      style={{
-                        borderColor:
-                          paymentMethod === "card" ? "#111827" : "#E5E7EB",
-                        background:
-                          paymentMethod === "card" ? "#F3F4F6" : "#FFFFFF",
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="w-4 h-4 rounded-full border flex items-center justify-center"
-                            style={{
-                              borderColor:
-                                paymentMethod === "card"
-                                  ? "#111827"
-                                  : "#D1D5DB",
-                            }}
-                          >
-                            {paymentMethod === "card" && (
-                              <span
-                                className="w-2 h-2 rounded-full"
-                                style={{ background: "#111827" }}
-                              />
-                            )}
-                          </span>
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: "#111827" }}
-                          >
-                            Card payment
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-[11px]" style={{ color: "#6B7280" }}>
-                        Pay securely with your debit or credit card.
-                      </p>
-                      <div className="mt-1 h-6 flex items-center gap-2">
-                        <img
-                          src="/images/card.png"
-                          className="h-10 w-12 rounded"
-                        />
-                      </div>
-                    </button>
-
-                    {/* Transfer / wallets */}
-                    {/* <button
-                      type="button"
-                      onClick={() => setPaymentMethod("transfer")}
-                      className="w-full text-left rounded-2xl p-3 sm:p-4 lg:p-5 border flex flex-col gap-2 transition-all"
-                      style={{
-                        borderColor:
-                          paymentMethod === "transfer" ? "#111827" : "#E5E7EB",
-                        background:
-                          paymentMethod === "transfer" ? "#F3F4F6" : "#FFFFFF",
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="w-4 h-4 rounded-full border flex items-center justify-center"
-                            style={{
-                              borderColor:
-                                paymentMethod === "transfer"
-                                  ? "#111827"
-                                  : "#D1D5DB",
-                            }}
-                          >
-                            {paymentMethod === "transfer" && (
-                              <span
-                                className="w-2 h-2 rounded-full"
-                                style={{ background: "#111827" }}
-                              />
-                            )}
-                          </span>
-                          <span
-                            className="text-xs font-medium"
-                            style={{ color: "#111827" }}
-                          >
-                            Transfer / Wallets
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-[11px]" style={{ color: "#6B7280" }}>
-                        Complete payment via PayPal, Cash App or Zelle transfer.
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <div
-                          className="h-6 w-12 rounded bg-[#E5E7EB] flex items-center justify-center text-[9px]"
-                          style={{ color: "#4B5563" }}
-                        >
-                          PayPal
-                        </div>
-                        <div
-                          className="h-6 w-12 rounded bg-[#E5E7EB] flex items-center justify-center text-[9px]"
-                          style={{ color: "#4B5563" }}
-                        >
-                          CashApp
-                        </div>
-                        <div
-                          className="h-6 w-12 rounded bg-[#E5E7EB] flex items-center justify-center text-[9px]"
-                          style={{ color: "#4B5563" }}
-                        >
-                          Zelle
-                        </div>
-                        <div
-                          className="h-6 w-12 rounded bg-[#E5E7EB] flex items-center justify-center text-[9px]"
-                          style={{ color: "#4B5563" }}
-                        >
-                          Others
-                        </div>
-                      </div>
-                    </button> */}
-
-                    {/* Gift card */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod("giftcard")}
-                      className="w-full text-left rounded-2xl p-3 sm:p-4 lg:p-5 border flex flex-col gap-2 transition-all"
-                      style={{
-                        borderColor:
-                          paymentMethod === "giftcard" ? "#111827" : "#E5E7EB",
-                        background:
-                          paymentMethod === "giftcard" ? "#F3F4F6" : "#FFFFFF",
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="w-4 h-4 rounded-full border flex items-center justify-center"
-                            style={{
-                              borderColor:
-                                paymentMethod === "giftcard"
-                                  ? "#111827"
-                                  : "#D1D5DB",
-                            }}
-                          >
-                            {paymentMethod === "giftcard" && (
-                              <span
-                                className="w-2 h-2 rounded-full"
-                                style={{ background: "#111827" }}
-                              />
-                            )}
-                          </span>
-                          <span
-                            className="text-xs font-medium flex items-center gap-1"
-                            style={{ color: "#111827" }}
-                          >
-                            <Gift size={12} />
-                            Gift card
-                          </span>
-                        </div>
-                      </div>
-                      <p className="text-[11px]" style={{ color: "#6B7280" }}>
-                        Use a supported gift card and upload it after placing
-                        your order.
-                      </p>
-                    </button>
-                  </div>
-                </div>
 
                 {error && (
                   <p className="text-xs" style={{ color: "#B91C1C" }}>
@@ -650,7 +470,7 @@ export default function Checkout() {
                   }}
                 >
                   <CreditCard size={16} />
-                  {submitting ? "Processing…" : "Place order"}
+                  {submitting ? "Processing…" : "Continue to payment"}
                 </button>
 
                 {/* Security note */}
@@ -778,6 +598,38 @@ export default function Checkout() {
                     >
                       {formatPrice(total, currency)}
                     </span>
+                  </div>
+                </div>
+
+                <div
+                  className="mt-4 rounded-2xl border px-4 py-4"
+                  style={{
+                    borderColor: "#D1FAE5",
+                    background: "#ECFDF5",
+                  }}
+                >
+                  <p
+                    className="text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: "#065F46" }}
+                  >
+                    Flexible payment plan
+                  </p>
+                  <p className="text-sm mt-2" style={{ color: "#111827" }}>
+                    You will pay <span className="font-semibold">40% upfront</span> and the remaining <span className="font-semibold">60% on delivery</span>.
+                  </p>
+                  <div className="mt-3 space-y-2 text-xs">
+                    <div className="flex items-center justify-between">
+                      <span style={{ color: "#065F46" }}>Minimum upfront payment</span>
+                      <span className="font-semibold" style={{ color: "#111827" }}>
+                        {formatPrice(minimumUpfrontAmount, currency)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span style={{ color: "#065F46" }}>Balance on delivery</span>
+                      <span className="font-semibold" style={{ color: "#111827" }}>
+                        {formatPrice(remainingOnDeliveryAmount, currency)}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

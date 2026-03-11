@@ -18,11 +18,11 @@ export default function Payment() {
   const { user, loading: authLoading } = useAuth();
 
   const [order, setOrder] = useState(null);
-  const [wallets, setWallets] = useState([]);
   const [loadingOrder, setLoadingOrder] = useState(true);
-  const [loadingWallets, setLoadingWallets] = useState(true);
-  const [activeMethod, setActiveMethod] = useState("card"); // "card" | "transfer" | "giftcard"
+  const [activeMethod, setActiveMethod] = useState("card"); // "card" | "bankrequest" | "giftcard"
   const [error, setError] = useState("");
+  const [bankRequestSubmitting, setBankRequestSubmitting] = useState(false);
+  const [bankRequestMessage, setBankRequestMessage] = useState("");
 
   // Card + billing form
   const [cardForm, setCardForm] = useState({
@@ -80,21 +80,6 @@ export default function Payment() {
     }
   }, [orderId]);
 
-  useEffect(() => {
-    const fetchWallets = async () => {
-      try {
-        setLoadingWallets(true);
-        const res = await api.get("/api/payment-accounts");
-        setWallets(res.data.accounts || []);
-      } catch (err) {
-        console.error("Error loading payment accounts:", err);
-      } finally {
-        setLoadingWallets(false);
-      }
-    };
-
-    fetchWallets();
-  }, []);
 
   // Cleanup gift preview urls on unmount
   useEffect(() => {
@@ -155,6 +140,23 @@ export default function Payment() {
   }, [order]);
 
   const currency = order?.currency || "USD";
+  const paymentPlan = useMemo(() => {
+    const totalAmount = Number(order?.total ?? order?.subtotal ?? 0);
+    const upfrontPercentage = Number(order?.paymentPlan?.upfrontPercentage ?? 40);
+    const minimumUpfrontAmount =
+      Number(order?.paymentPlan?.minimumUpfrontAmount) ||
+      Math.round(((totalAmount * upfrontPercentage) / 100) * 100) / 100;
+    const remainingOnDeliveryAmount =
+      Number(order?.paymentPlan?.remainingOnDeliveryAmount) ||
+      Math.round((totalAmount - minimumUpfrontAmount) * 100) / 100;
+
+    return {
+      upfrontPercentage,
+      deliveryPercentage: Number(order?.paymentPlan?.deliveryPercentage ?? 60),
+      minimumUpfrontAmount,
+      remainingOnDeliveryAmount,
+    };
+  }, [order]);
 
   const handleCardSubmit = async (e) => {
     e.preventDefault();
@@ -215,6 +217,32 @@ export default function Payment() {
       );
     } finally {
       setCardSubmitting(false);
+    }
+  };
+
+  const handleBankRequest = async () => {
+    try {
+      setBankRequestSubmitting(true);
+      setBankRequestMessage("");
+      setError("");
+
+      const res = await api.post(`/api/orders/${orderId}/request-bank-payment`, {});
+      setOrder((prev) => ({
+        ...prev,
+        bankPaymentRequest: res.data.bankPaymentRequest,
+        paymentMethod: "bank_request",
+      }));
+      setBankRequestMessage(
+        "Your request has been submitted. A payment email will be sent once a superadmin assigns the available payment methods for this order.",
+      );
+    } catch (err) {
+      console.error("Bank request error:", err);
+      setError(
+        err?.response?.data?.error ||
+          "We couldn’t submit your payment request right now. Please try again.",
+      );
+    } finally {
+      setBankRequestSubmitting(false);
     }
   };
 
@@ -335,6 +363,41 @@ export default function Payment() {
           </div>
         )}
 
+        <div
+          className="mb-6 rounded-3xl border px-5 py-5 sm:px-6"
+          style={{ borderColor: "#D1FAE5", background: "#ECFDF5" }}
+        >
+          <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#065F46" }}>
+            Payment structure
+          </p>
+          <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div>
+              <p className="text-xs" style={{ color: "#065F46" }}>Order total</p>
+              <p className="text-base font-semibold" style={{ color: "#111827" }}>
+                {formatPrice(total, currency)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs" style={{ color: "#065F46" }}>Minimum upfront payment</p>
+              <p className="text-base font-semibold" style={{ color: "#111827" }}>
+                {formatPrice(paymentPlan.minimumUpfrontAmount, currency)}
+              </p>
+              <p className="text-[11px]" style={{ color: "#047857" }}>
+                {paymentPlan.upfrontPercentage}% due now
+              </p>
+            </div>
+            <div>
+              <p className="text-xs" style={{ color: "#065F46" }}>Balance on delivery</p>
+              <p className="text-base font-semibold" style={{ color: "#111827" }}>
+                {formatPrice(paymentPlan.remainingOnDeliveryAmount, currency)}
+              </p>
+              <p className="text-[11px]" style={{ color: "#047857" }}>
+                {paymentPlan.deliveryPercentage}% due on delivery
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)] gap-6 lg:gap-10 items-start">
           {/* LEFT: Payment methods */}
           <section className="space-y-4 order-2 lg:order-1">
@@ -352,6 +415,12 @@ export default function Payment() {
                 active={activeMethod === "transfer"}
                 onClick={() => setActiveMethod("transfer")}
               /> */}
+              <PaymentTab
+                icon={Banknote}
+                label="Request payment details"
+                active={activeMethod === "bankrequest"}
+                onClick={() => setActiveMethod("bankrequest")}
+              />
               <PaymentTab
                 icon={Gift}
                 label="Gift card"
@@ -373,8 +442,7 @@ export default function Payment() {
                 </h2>
                 <p className="text-xs" style={{ color: "#6B7280" }}>
                   Your card details are stored securely for manual payment
-                  confirmation. In production, use a PCI-compliant provider like
-                  Stripe or Paystack instead of saving raw card data.
+                  confirmation.
                 </p>
 
                 <form onSubmit={handleCardSubmit} className="space-y-3">
@@ -682,7 +750,7 @@ export default function Payment() {
               </div>
             )}
 
-            {activeMethod === "transfer" && (
+            {activeMethod === "bankrequest" && (
               <div
                 className="rounded-3xl border bg-white p-5 sm:p-6 space-y-4"
                 style={{ borderColor: "#E5E7EB" }}
@@ -691,89 +759,126 @@ export default function Payment() {
                   className="text-sm font-semibold"
                   style={{ color: "#111827" }}
                 >
-                  Bank / wallet transfer
+                  Request bank / wallet payment details
                 </h2>
 
                 <p className="text-xs" style={{ color: "#6B7280" }}>
-                  Send the exact order amount to any of the accounts below.
-                  After payment, reply the email you received with your proof of
-                  payment for faster confirmation.
+                  Choose this option if you want the available payment methods for this order to be assigned manually by the superadmin. Once assigned, you will receive a styled email with the payment details and the same details will appear here.
                 </p>
 
                 <div
-                  className="rounded-xl px-4 py-3 text-xs flex flex-col sm:flex-row sm:items-center sm:gap-2 bg-green-100"
-                  style={{ color: "#374151", border: "1px solid #E5E7EB" }}
+                  className="rounded-2xl border px-4 py-4 text-xs space-y-2"
+                  style={{ borderColor: "#E5E7EB", background: "#F9FAFB" }}
                 >
-                  <span className="font-medium text-center sm:text-left">
-                    Note: Send Receipt to
-                  </span>
-
-                  <span className="font-semibold text-center sm:text-left text-[#111827] break-all">
-                    veritygem47@gmail.com
-                  </span>
-
-                  <span className="text-center sm:text-left">
-                    for confirmation.
-                  </span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span style={{ color: "#6B7280" }}>Minimum upfront amount</span>
+                    <span className="font-semibold" style={{ color: "#111827" }}>
+                      {formatPrice(paymentPlan.minimumUpfrontAmount, currency)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span style={{ color: "#6B7280" }}>Balance on delivery</span>
+                    <span className="font-semibold" style={{ color: "#111827" }}>
+                      {formatPrice(paymentPlan.remainingOnDeliveryAmount, currency)}
+                    </span>
+                  </div>
                 </div>
 
-                {loadingWallets ? (
-                  <p className="text-xs" style={{ color: "#6B7280" }}>
-                    Loading accounts…
-                  </p>
-                ) : wallets.length === 0 ? (
-                  <p className="text-xs" style={{ color: "#6B7280" }}>
-                    No payment accounts are available at the moment.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {wallets.map((acc) => (
-                      <div
-                        key={acc._id}
-                        className="rounded-2xl border px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-                        style={{ borderColor: "#E5E7EB" }}
-                      >
-                        <div className="flex items-center gap-3 min-w-0">
-                          {acc.logoUrl && (
-                            <img
-                              src={acc.logoUrl}
-                              alt={acc.name}
-                              className="w-8 h-8 rounded-full object-contain bg-[#F3F4F6]"
-                            />
-                          )}
-                          <div className="min-w-0">
-                            <p
-                              className="text-xs font-medium truncate"
-                              style={{ color: "#111827" }}
-                            >
-                              {acc.displayName || acc.name}
-                            </p>
-                            <p
-                              className="text-[11px] truncate"
-                              style={{ color: "#6B7280" }}
-                            >
-                              {acc.details}
-                            </p>
-                          </div>
-                        </div>
+                {!order?.bankPaymentRequest?.requested && (
+                  <button
+                    type="button"
+                    onClick={handleBankRequest}
+                    disabled={bankRequestSubmitting}
+                    className="w-full rounded-lg text-sm font-medium py-3 text-center flex items-center justify-center gap-2"
+                    style={{
+                      background: "#111827",
+                      color: "#FFFFFF",
+                      opacity: bankRequestSubmitting ? 0.85 : 1,
+                    }}
+                  >
+                    {bankRequestSubmitting && (
+                      <Loader2 size={16} className="animate-spin" />
+                    )}
+                    {bankRequestSubmitting
+                      ? "Submitting request…"
+                      : "Request payment details"}
+                  </button>
+                )}
 
-                        <div className="text-[11px] sm:text-right break-all">
-                          {acc.accountNumber && (
-                            <p style={{ color: "#111827" }}>
-                              {acc.accountNumber}
-                            </p>
-                          )}
-                          {acc.bankName && (
-                            <p style={{ color: "#6B7280" }}>{acc.bankName}</p>
-                          )}
-                          {acc.type && (
-                            <p style={{ color: "#9CA3AF" }}>
-                              {acc.type.toUpperCase()}
-                            </p>
-                          )}
+                {bankRequestMessage && (
+                  <div
+                    className="rounded-xl border px-4 py-3 text-xs"
+                    style={{
+                      borderColor: "#BBF7D0",
+                      background: "#F0FDF4",
+                      color: "#166534",
+                    }}
+                  >
+                    {bankRequestMessage}
+                  </div>
+                )}
+
+                {order?.bankPaymentRequest?.requested && (
+                  <div className="space-y-3">
+                    <div
+                      className="rounded-2xl border px-4 py-4"
+                      style={{ borderColor: "#E5E7EB", background: "#FFFFFF" }}
+                    >
+                      <p className="text-xs font-semibold" style={{ color: "#111827" }}>
+                        Request status: {capitalize(order.bankPaymentRequest.status || "requested")}
+                      </p>
+                      <p className="text-xs mt-2" style={{ color: "#6B7280" }}>
+                        {order.bankPaymentRequest.status === "sent"
+                          ? "Your payment methods have been assigned. Please pay the minimum upfront amount using any of the options below and reply to the email with your proof of payment."
+                          : "Your request has been received. Please wait while the superadmin assigns the payment options for this order."}
+                      </p>
+                      {order.bankPaymentRequest.expiresAt && (
+                        <p className="text-[11px] mt-2" style={{ color: "#9CA3AF" }}>
+                          Expires: {formatDateTime(order.bankPaymentRequest.expiresAt)}
+                        </p>
+                      )}
+                    </div>
+
+                    {Array.isArray(order?.bankPaymentRequest?.paymentOptions) &&
+                      order.bankPaymentRequest.paymentOptions.length > 0 && (
+                        <div className="space-y-3">
+                          {order.bankPaymentRequest.paymentOptions.map((option, index) => (
+                            <div
+                              key={`${option.variant}-${index}`}
+                              className="rounded-2xl border px-4 py-4"
+                              style={{ borderColor: "#E5E7EB" }}
+                            >
+                              <div className="flex items-start justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-semibold" style={{ color: "#111827" }}>
+                                    {option.label || capitalize(option.variant || "Payment method")}
+                                  </p>
+                                  {option.accountName && (
+                                    <p className="text-xs mt-1" style={{ color: "#6B7280" }}>
+                                      Account name: <span className="font-medium" style={{ color: "#111827" }}>{option.accountName}</span>
+                                    </p>
+                                  )}
+                                </div>
+                                <span
+                                  className="px-2 py-1 rounded-full text-[10px] font-semibold uppercase"
+                                  style={{ background: "#F3F4F6", color: "#374151" }}
+                                >
+                                  {option.variant}
+                                </span>
+                              </div>
+                              <p className="text-xs mt-3" style={{ color: "#6B7280" }}>Payment details</p>
+                              <p className="text-sm font-semibold break-all" style={{ color: "#111827" }}>
+                                {option.accountIdentifier}
+                              </p>
+                              {option.instructions && (
+                                <p className="text-xs mt-3 leading-6" style={{ color: "#6B7280" }}>
+                                  {option.instructions}
+                                </p>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      </div>
-                    ))}
+                      )}
                   </div>
                 )}
               </div>
@@ -1003,6 +1108,18 @@ export default function Payment() {
                   </span>
                 </div>
               </div>
+
+              <div
+                className="mt-4 rounded-2xl border px-4 py-4"
+                style={{ borderColor: "#D1FAE5", background: "#ECFDF5" }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#065F46" }}>
+                  Minimum payment required now
+                </p>
+                <p className="text-sm mt-2" style={{ color: "#111827" }}>
+                  Pay at least <span className="font-semibold">{formatPrice(paymentPlan.minimumUpfrontAmount, currency)}</span> now, then pay <span className="font-semibold">{formatPrice(paymentPlan.remainingOnDeliveryAmount, currency)}</span> on delivery.
+                </p>
+              </div>
             </div>
 
             <div
@@ -1040,6 +1157,19 @@ function PaymentTab({ icon: Icon, label, active, onClick }) {
       <span className="truncate">{label}</span>
     </button>
   );
+}
+
+function capitalize(str = "") {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+function formatDateTime(value) {
+  try {
+    return new Date(value).toLocaleString();
+  } catch {
+    return value;
+  }
 }
 
 function formatPrice(amount, currency = "USD") {
