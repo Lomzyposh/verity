@@ -20,12 +20,39 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(cookieParser());
+// Build allowed origins list from env (supports comma-separated list)
+const rawOrigins = process.env.CLIENT_URL || "";
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  ...rawOrigins
+    .split(",")
+    .map((o) => o.trim().replace(/\/+$/, "")) // strip trailing slashes
+    .filter(Boolean),
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, Postman, server-to-server)
+      if (!origin) return callback(null, true);
+      // Normalise: strip trailing slash from incoming origin too
+      const normalised = origin.replace(/\/+$/, "");
+      if (allowedOrigins.includes(normalised)) {
+        return callback(null, true);
+      }
+      console.warn(`CORS blocked origin: ${origin}`);
+      return callback(new Error(`CORS: origin not allowed — ${origin}`));
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    optionsSuccessStatus: 200, // some legacy mobile browsers choke on 204
   }),
 );
+
+// Explicitly handle OPTIONS preflight for all routes
+app.options("*", cors());
 
 cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_NAME,
