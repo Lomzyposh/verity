@@ -1227,8 +1227,8 @@ export default function AdminPanel() {
                         onClick={() => openBankRequestModal(o)}
                       >
                         {o.bankPaymentRequest?.status === "sent"
-                          ? "Edit & Resend"
-                          : "Send Details"}
+                          ? "Edit & Update"
+                          : "Assign Options"}
                       </button>
                     </div>
                   ),
@@ -1371,7 +1371,7 @@ export default function AdminPanel() {
 
         <Modal
           open={bankRequestModalOpen}
-          title="Send bank payment instructions"
+          title="Assign payment options"
           onClose={() => setBankRequestModalOpen(false)}
         >
           <div className="space-y-4">
@@ -1495,7 +1495,7 @@ export default function AdminPanel() {
               onClick={submitBankRequestInstructions}
               className="w-full px-4 py-3 rounded-xl bg-black text-white text-sm font-semibold"
             >
-              Send payment instructions
+              Assign payment options
             </button>
           </div>
         </Modal>

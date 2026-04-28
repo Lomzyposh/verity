@@ -162,34 +162,8 @@ export default function Navbar() {
             )}
           </Link>
 
-          {/* Account / Auth */}
-          {!user ? (
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition border"
-              style={{
-                background: shouldDarkText ? "#FFFFFF" : "transparent",
-                color: "#111827",
-                borderColor: shouldDarkText
-                  ? "rgba(17,24,39,0.06)"
-                  : "rgba(255,255,255,0.25)",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.background = shouldDarkText
-                  ? "#F8FAFC"
-                  : "rgba(255,255,255,0.08)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = shouldDarkText
-                  ? "#FFFFFF"
-                  : "transparent")
-              }
-            >
-              <User size={16} />
-              <span className="hidden sm:inline">Login</span>
-            </button>
-          ) : (
+          {/* Account / Auth - only shown when admin is logged in */}
+          {user ? (
             <div className="relative" ref={ref}>
               <button
                 onClick={() => setOpen((prev) => !prev)}
@@ -217,22 +191,16 @@ export default function Navbar() {
                       : "1px solid rgba(255,255,255,0.12)",
                   }}
                 >
-                  <Link
-                    to="/account"
-                    className="block px-3 py-2 rounded-md text-sm hover:bg-black/5"
-                    style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
-                    onClick={() => setOpen(false)}
-                  >
-                    My Account
-                  </Link>
-                  <Link
-                    to="/account/orders"
-                    className="block px-3 py-2 rounded-md text-sm hover:bg-black/5"
-                    style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
-                    onClick={() => setOpen(false)}
-                  >
-                    Orders
-                  </Link>
+                  {user?.isAdmin && (
+                    <Link
+                      to="/admin"
+                      className="block px-3 py-2 rounded-md text-sm hover:bg-black/5"
+                      style={{ color: shouldDarkText ? "#111827" : "#FFFFFF" }}
+                      onClick={() => setOpen(false)}
+                    >
+                      Admin Panel
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       handleLogout();
@@ -246,7 +214,7 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-          )}
+          ) : null}
         </div>
       </nav>
 

@@ -2167,17 +2167,7 @@ app.post("/api/orders", optionalAuthMiddleware, async (req, res) => {
     await order.save();
     await order.populate("items.product");
 
-    const emailTo = req.user?.email || guestEmail;
-
-    // Payment link for the checkout flow
     const paymentLink = `${process.env.CLIENT_URL}/payment/${order._id}`;
-
-    // Send confirmation email
-    await sendEmail(
-      emailTo,
-      `Order Confirmation - ${order.orderNumber}`,
-      emailTemplates.orderConfirmation(order, orderItems, paymentLink),
-    );
 
     // Clear cart for logged-in user
     if (req.user) {
@@ -2241,13 +2231,8 @@ app.post(
 
       if (req.user) {
         query.user = req.user._id;
-      } else if (email) {
-        query.guestEmail = String(email).trim().toLowerCase();
-      } else {
-        return res.status(400).json({
-          error: "Guest email is required to request bank payment",
-        });
       }
+      // Guests can request by orderId alone (no auth required)
 
       const order = await Order.findOne(query);
       if (!order) {
@@ -3269,27 +3254,10 @@ app.post(
       order.bankPaymentRequest.expiresAt = expiresAt;
       order.bankPaymentRequest.adminNote = String(adminNote || "").trim();
 
-      const emailTo = resolveOrderEmail(order, order.user);
-      if (!emailTo) {
-        return res
-          .status(400)
-          .json({ error: "No customer email found for this order" });
-      }
-
-      await sendEmail(
-        emailTo,
-        `Payment instructions – ${order.orderNumber}`,
-        emailTemplates.bankPaymentInstructions(
-          order,
-          normalizedOptions,
-          expiresAt,
-        ),
-      );
-
       await order.save();
 
       res.json({
-        message: "Bank payment instructions sent successfully",
+        message: "Payment options assigned successfully. Customer can refresh their payment page to see the details.",
         order,
       });
     } catch (error) {
