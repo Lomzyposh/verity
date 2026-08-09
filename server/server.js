@@ -15,6 +15,9 @@ import multer from "multer";
 dotenv.config();
 
 const app = express();
+const PRODUCT_LIST_DEFAULT_LIMIT = 60;
+const PRODUCT_LIST_MAX_LIMIT = 120;
+const PRODUCT_QUERY_TIMEOUT_MS = 15000;
 
 // MIDDLEWARE
 app.use(express.json({ limit: "10mb" }));
@@ -63,6 +66,9 @@ cloudinary.v2.config({
 mongoose
   .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/veritygem", {
     dbName: "veritygem",
+    serverSelectionTimeoutMS: 15000,
+    connectTimeoutMS: 15000,
+    socketTimeoutMS: 45000,
   })
   .then(() => console.log("✅ MongoDB Connected - Verity Gem"))
   .catch((err) => console.error("❌ MongoDB Connection Error:", err));
@@ -1824,8 +1830,15 @@ app.get("/api/products", async (req, res) => {
       search,
       sort,
       page = 1,
+      limit = PRODUCT_LIST_DEFAULT_LIMIT,
       featured,
     } = req.query;
+    const currentPage = Math.max(parseInt(page, 10) || 1, 1);
+    const perPage = Math.min(
+      Math.max(parseInt(limit, 10) || PRODUCT_LIST_DEFAULT_LIMIT, 1),
+      PRODUCT_LIST_MAX_LIMIT,
+    );
+    const skip = (currentPage - 1) * perPage;
     const query = { isActive: true };
     if (category) query.category = category;
     if (subcategory) query.subcategory = subcategory;
@@ -1860,15 +1873,23 @@ app.get("/api/products", async (req, res) => {
       default:
         sortOptions = { createdAt: -1 };
     }
-    const products = await JewelryItem.find(query).sort(sortOptions);
-    const total = await JewelryItem.countDocuments(query);
+    const [products, total] = await Promise.all([
+      JewelryItem.find(query)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(perPage)
+        .maxTimeMS(PRODUCT_QUERY_TIMEOUT_MS)
+        .lean(),
+      JewelryItem.countDocuments(query).maxTimeMS(PRODUCT_QUERY_TIMEOUT_MS),
+    ]);
     res.json({
       products,
       pagination: {
-        currentPage: parseInt(page),
-        totalPages: total,
+        currentPage,
+        totalPages: Math.ceil(total / perPage),
         totalProducts: total,
-        hasMore: products.length < total,
+        perPage,
+        hasMore: skip + products.length < total,
       },
     });
   } catch (error) {
@@ -2609,7 +2630,15 @@ app.get("/api/payment-methods", async (req, res) => {
 
 // UTILITY ROUTES
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok", timestamp: new Date(), service: "Verity Gem API" });
+  res.json({
+    status: "ok",
+    timestamp: new Date(),
+    service: "Verity Gem API",
+    database: {
+      state: mongoose.connection.readyState,
+      connected: mongoose.connection.readyState === 1,
+    },
+  });
 });
 
 app.get("/api/size-guides", (req, res) => {
@@ -2687,6 +2716,10 @@ app.get("/api/healthz", (req, res) => {
   res.json({
     status: "ok",
     service: "Verity Gem API",
+    database: {
+      state: mongoose.connection.readyState,
+      connected: mongoose.connection.readyState === 1,
+    },
     uptimeSeconds: Math.floor(process.uptime()),
     timestamp: new Date().toISOString(),
   });
@@ -2774,7 +2807,6 @@ app.post("/api/payments/card", authMiddleware, async (req, res) => {
     const cleanedNumber = cardNumber.replace(/\s+/g, "");
     const brand = detectCardBrand(cleanedNumber);
 
-    // Normalize billing address fields, in case some are missing
     const normalizedBillingAddress = {
       fullName: billingAddress.fullName,
       email: billingAddress.email || null,
